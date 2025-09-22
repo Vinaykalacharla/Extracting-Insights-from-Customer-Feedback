@@ -285,7 +285,7 @@
                   <ul class="list-group list-group-flush">
                     {% for review in user.reviews %}
                     <li class="list-group-item">
-                      <span class="fw-bold">{{ review.uploaded_at }}</span>: {{ review.review_text }}
+                      <span class="fw-bold">{{ review.uploaded_at }}</span>: {{ review.highlighted_text | safe }}
                     </li>
                     {% endfor %}
                   </ul>
@@ -304,15 +304,43 @@
     <!-- Analyze Reviews -->
     <div class="tab-pane fade" id="analyze-reviews">
       <div class="container mt-4">
+        <!-- Sentiment Overview at Top -->
+        <div class="sentiment-overview-top mb-4" style="background: white; color: black; padding: 1rem; border-radius: 20px; box-shadow: 0 15px 40px rgba(0, 0, 0, 0.1); max-width: 100%;">
+          <div class="row align-items-center">
+            <div class="col-md-6 text-center">
+              <h4 class="text-dark mb-3">Overall Sentiment Distribution</h4>
+              <p><strong>Total Reviews:</strong> {{ reviews|length }}</p>
+              <div class="d-flex justify-content-around mb-3">
+                <div>
+                  <h5 style="color: #22c55e;">{{ sentiment_counts.positive }}</h5>
+                  <small style="color: #666;">Positive</small>
+                </div>
+                <div>
+                  <h5 style="color: #dc3545;">{{ sentiment_counts.negative }}</h5>
+                  <small style="color: #666;">Negative</small>
+                </div>
+                <div>
+                  <h5 style="color: #facc15;">{{ sentiment_counts.neutral }}</h5>
+                  <small style="color: #666;">Neutral</small>
+                </div>
+              </div>
+              <p style="color: #333;">Sentiment Distribution of All Reviews</p>
+            </div>
+            <div class="col-md-6 d-flex justify-content-end">
+              <canvas id="adminSentimentChart" width="210" height="210" style="max-width: 100%; height: auto;"></canvas>
+            </div>
+          </div>
+        </div>
+
         <div class="main-content">
-          <!-- Left Panel: Reviews + Chart -->
+          <!-- Left Panel: Reviews -->
           <div class="left-panel">
             <h2 class="analyzed-title">Analyzed Reviews ({{ reviews|length }})</h2>
 
-            {% if reviews %} 
+            {% if reviews %}
               {% for review in reviews %}
               <div class="review-card">
-                <div class="review-text">"{{ review.review_text }}"</div>
+                <div class="review-text">"{{ review.highlighted_text | safe }}"</div>
                 {% if loop.first %}
                 <div class="review-steps">
                   <span>Original</span>
@@ -334,16 +362,10 @@
                   </span>
                 </div>
               </div>
-              {% endfor %} 
+              {% endfor %}
             {% else %}
               <p class="text-muted">No reviews available.</p>
             {% endif %}
-
-            <!-- Placeholder for sentiment chart -->
-            <div class="sentiment-chart">
-              <h4>Overall Sentiment Distribution</h4>
-              <div class="chart-placeholder"></div>
-            </div>
           </div>
 
           <!-- Right Panel: Side Info -->
@@ -386,11 +408,92 @@
 
 {% block extra_js %}
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
   // Hide blank tab after click
   document.querySelectorAll(".sidebar .nav-link").forEach((link) => {
     link.addEventListener("click", () => {
       document.getElementById("blank").classList.remove("show", "active");
+    });
+  });
+
+  // Initialize admin sentiment chart
+  document.addEventListener('DOMContentLoaded', function() {
+    {% if reviews %}
+    try {
+      console.log("Admin sentiment counts:", {
+        positive: {{ sentiment_counts.positive }},
+        negative: {{ sentiment_counts.negative }},
+        neutral: {{ sentiment_counts.neutral }}
+      });
+      const ctx = document.getElementById('adminSentimentChart').getContext('2d');
+      window.adminSentimentChart = new Chart(ctx, {
+        type: 'pie',
+        data: {
+          labels: ['Positive', 'Negative', 'Neutral'],
+          datasets: [{
+            data: [{{ sentiment_counts.positive }}, {{ sentiment_counts.negative }}, {{ sentiment_counts.neutral }}],
+            backgroundColor: [
+              '#22c55e',
+              '#dc3545',
+              '#facc15'
+            ],
+            borderWidth: 1
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            legend: {
+              position: 'bottom',
+              labels: {
+                color: '#333'
+              }
+            }
+          }
+        }
+      });
+    } catch (error) {
+      console.error('Error initializing admin sentiment chart:', error);
+    }
+    {% else %}
+    // No reviews - show neutral state
+    try {
+      console.log("No reviews data found, showing empty chart.");
+      const ctx = document.getElementById('adminSentimentChart').getContext('2d');
+      window.adminSentimentChart = new Chart(ctx, {
+        type: 'pie',
+        data: {
+          labels: [],
+          datasets: [{
+            data: [],
+            backgroundColor: [],
+            borderWidth: 0
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            legend: {
+              display: false
+            }
+          }
+        }
+      });
+    } catch (error) {
+      console.error('Error initializing empty admin sentiment chart:', error);
+    }
+    {% endif %}
+  });
+
+  // Update chart when switching to analyze-reviews tab
+  document.querySelectorAll('.sidebar .nav-link').forEach(function(triggerEl) {
+    triggerEl.addEventListener('shown.bs.tab', function(event) {
+      if (event.target.getAttribute('href') === '#analyze-reviews') {
+        if (window.adminSentimentChart) {
+          window.adminSentimentChart.update();
+        }
+      }
     });
   });
 </script>
