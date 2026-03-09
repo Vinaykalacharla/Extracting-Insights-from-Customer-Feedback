@@ -26,4 +26,4 @@ USER appuser
 
 EXPOSE 10000
 
-CMD ["sh", "-c", "gunicorn --workers ${WEB_CONCURRENCY:-2} --timeout ${GUNICORN_TIMEOUT:-120} --bind 0.0.0.0:${PORT:-10000} 'app:create_app()'"]
+CMD ["sh", "-c", "gunicorn --workers ${WEB_CONCURRENCY:-2} --timeout ${GUNICORN_TIMEOUT:-120} --bind 0.0.0.0:${PORT:-10000} app:app"]

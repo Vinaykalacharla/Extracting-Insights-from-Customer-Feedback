@@ -72,3 +72,8 @@ def create_app():
 
     return app
 
+
+# Expose a WSGI application object so deployments using `gunicorn app:app`
+# work even when the package name matches the module path.
+app = create_app()
+
