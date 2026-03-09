@@ -1,4 +1,4 @@
-﻿{% extends "base.html" %}
+{% extends "base.html" %}
 {% block title %}Dashboard | ReviewSense{% endblock %}
 
 {% block navbar %}
@@ -25,9 +25,9 @@
           <p class="kicker" style="color:rgba(218,235,255,0.8);">User Workspace</p>
           <h1 class="app-hero-title">
             Hello {{ user.username if user else 'User' }},
-            <span class="grad-text">let’s decode your customer voice.</span>
+            <span class="grad-text">your feedback command center is live.</span>
           </h1>
-          <p class="app-hero-text">Move between uploads, profile intelligence, and account controls from one cleaner command layer.</p>
+          <p class="app-hero-text">Track review volume, urgent customer issues, recurring themes, and the next signals worth acting on from one workspace.</p>
         </div>
 
         <div class="hero-action-row">
@@ -38,54 +38,225 @@
 
         <div class="hero-stat-row">
           <article class="hero-stat">
-            <small>Navigation</small>
-            <strong>Dashboard, profile, uploads, settings</strong>
+            <small>Total Reviews</small>
+            <strong>{{ dashboard_stats.total_reviews }}</strong>
           </article>
           <article class="hero-stat">
-            <small>Primary Focus</small>
-            <strong>Review analysis and workspace control</strong>
+            <small>High Urgency</small>
+            <strong>{{ dashboard_stats.high_urgency_reviews }}</strong>
           </article>
           <article class="hero-stat">
-            <small>Next Action</small>
-            <strong>Upload new reviews or inspect history</strong>
+            <small>Avg Experience</small>
+            <strong>{{ '%.1f'|format(dashboard_stats.avg_experience_score) }}/100</strong>
           </article>
         </div>
       </div>
 
       <aside class="hero-side-card">
         <div>
-          <p class="kicker" style="color:rgba(218,235,255,0.8);">Workspace Summary</p>
-          <strong>Everything important is one click away.</strong>
+          <p class="kicker" style="color:rgba(218,235,255,0.8);">Workspace Signals</p>
+          <strong>{{ dashboard_stats.top_intent.label|replace('_', ' ')|title }} is the dominant intent right now.</strong>
         </div>
-        <p class="page-subtitle">Use the profile page for analyzed history, the upload page for fresh data, and settings for account security.</p>
+        <p class="page-subtitle">
+          Language mix is led by <strong>{{ dashboard_stats.dominant_language.label|upper }}</strong>.
+          {% if dashboard_stats.latest_upload %}
+          Latest upload landed on {{ dashboard_stats.latest_upload.strftime('%b %d, %Y at %H:%M') }}.
+          {% else %}
+          Upload your first review to start building a trend line.
+          {% endif %}
+        </p>
         <div class="callout-strip">
-          <span style="background:rgba(255,255,255,0.12); color:#e7f3ff;">Upload reviews</span>
-          <span style="background:rgba(255,255,255,0.12); color:#e7f3ff;">Inspect analysis</span>
-          <span style="background:rgba(255,255,255,0.12); color:#e7f3ff;">Protect account</span>
+          <span style="background:rgba(255,255,255,0.12); color:#e7f3ff;">{{ dashboard_stats.positive_share }}% positive share</span>
+          <span style="background:rgba(255,255,255,0.12); color:#e7f3ff;">
+            {% if dashboard_stats.review_velocity_delta >= 0 %}+{% endif %}{{ dashboard_stats.review_velocity_delta }} review velocity
+          </span>
+          <span style="background:rgba(255,255,255,0.12); color:#e7f3ff;">{{ '%.1f'|format(dashboard_stats.avg_impact_score) }} impact score</span>
         </div>
       </aside>
     </div>
   </section>
 
-  <section class="feature-grid reveal">
-    <article class="feature-card">
-      <p class="kicker">Profile Intelligence</p>
-      <h3 class="feature-title">Inspect analyzed review history</h3>
-      <p class="feature-text">See saved reviews, sentiment distribution, deep analysis modals, and aspect-level shifts.</p>
-      <a class="btn-gz btn-secondary-gz" href="{{ url_for('main.profile') }}">Open Profile</a>
-    </article>
-    <article class="feature-card">
-      <p class="kicker">Upload Center</p>
-      <h3 class="feature-title">Send fresh text or batch CSV files</h3>
-      <p class="feature-text">Submit a single review instantly or upload larger datasets for analysis at scale.</p>
-      <a class="btn-gz btn-primary-gz" href="{{ url_for('main.upload_review') }}">Upload Reviews</a>
-    </article>
-    <article class="feature-card">
-      <p class="kicker">Security</p>
-      <h3 class="feature-title">Keep credentials and access under control</h3>
-      <p class="feature-text">Update your password and maintain a clean, secure workspace configuration.</p>
-      <a class="btn-gz btn-warning-gz" href="{{ url_for('main.settings') }}">Manage Settings</a>
-    </article>
+  <section class="surface-card reveal">
+    <div class="page-head">
+      <div>
+        <p class="kicker">Workspace Intelligence</p>
+        <h2 class="page-title" style="font-size:1.3rem;">Portfolio health at a glance</h2>
+      </div>
+    </div>
+    <div class="metric-grid">
+      <article class="metric-card">
+        <div class="metric-label">Positive Share</div>
+        <div class="metric-value">{{ dashboard_stats.positive_share }}%</div>
+        <p class="page-subtitle">Across {{ dashboard_stats.total_reviews }} saved reviews.</p>
+      </article>
+      <article class="metric-card">
+        <div class="metric-label">Avg Confidence</div>
+        <div class="metric-value">{{ '%.2f'|format(dashboard_stats.avg_sentiment_score) }}</div>
+        <p class="page-subtitle">Overall model confidence across sentiment outputs.</p>
+      </article>
+      <article class="metric-card">
+        <div class="metric-label">Avg Impact</div>
+        <div class="metric-value">{{ '%.1f'|format(dashboard_stats.avg_impact_score) }}</div>
+        <p class="page-subtitle">Higher scores suggest stronger business relevance.</p>
+      </article>
+      <article class="metric-card">
+        <div class="metric-label">7-Day Velocity</div>
+        <div class="metric-value">
+          {% if dashboard_stats.review_velocity_delta >= 0 %}+{% endif %}{{ dashboard_stats.review_velocity_delta }}
+        </div>
+        <p class="page-subtitle">{{ dashboard_stats.review_velocity_current }} reviews this week vs {{ dashboard_stats.review_velocity_previous }} last week.</p>
+      </article>
+    </div>
+  </section>
+
+  <section class="layout-grid reveal">
+    <section class="surface-card">
+      <div class="page-head">
+        <div>
+          <p class="kicker">Action Queue</p>
+          <h2 class="page-title" style="font-size:1.3rem;">Priority reviews that deserve attention</h2>
+        </div>
+        <a class="btn-gz btn-secondary-gz" href="{{ url_for('main.profile') }}">Open Full History</a>
+      </div>
+
+      <div class="stack-grid">
+        {% if priority_queue %}
+          {% for item in priority_queue %}
+          <article class="feature-card" style="min-height:auto;">
+            <div class="page-head" style="margin-bottom:0.65rem;">
+              <div>
+                <p class="kicker">{{ item.priority }}</p>
+                <h3 class="feature-title">{{ item.intent_label|replace('_', ' ')|title }} review</h3>
+              </div>
+              <span class="badge-gz {% if item.sentiment == 'positive' %}badge-pos{% elif item.sentiment == 'negative' %}badge-neg{% else %}badge-neu{% endif %}">
+                {{ item.sentiment|title }}
+              </span>
+            </div>
+            <p class="feature-text">{{ item.review_text }}</p>
+            <div class="chip-row" style="margin-top:0.7rem;">
+              <span class="chip">Urgency: {{ item.urgency_level|title }}</span>
+              <span class="chip">Impact: {{ '%.1f'|format(item.impact_score) }}</span>
+              <span class="chip">Experience: {{ '%.1f'|format(item.experience_score) }}</span>
+              {% for aspect in item.top_aspects %}
+              <span class="chip">{{ aspect }}</span>
+              {% endfor %}
+              {% for flag in item.risk_flags %}
+              <span class="chip">{{ flag }}</span>
+              {% endfor %}
+            </div>
+            <p class="page-subtitle" style="margin-top:0.75rem;">
+              {% if item.uploaded_at %}
+              Logged on {{ item.uploaded_at.strftime('%b %d, %Y at %H:%M') }}.
+              {% else %}
+              Recently analyzed.
+              {% endif %}
+            </p>
+          </article>
+          {% endfor %}
+        {% else %}
+          <article class="feature-card" style="min-height:auto;">
+            <h3 class="feature-title">No urgent queue yet</h3>
+            <p class="feature-text">As your reviews grow, this section will surface the most urgent or highest-impact items automatically.</p>
+          </article>
+        {% endif %}
+      </div>
+    </section>
+
+    <section class="surface-card">
+      <div class="page-head">
+        <div>
+          <p class="kicker">Emerging Shifts</p>
+          <h2 class="page-title" style="font-size:1.3rem;">Aspect movement and language mix</h2>
+        </div>
+      </div>
+
+      <div class="table-shell">
+        <table class="table-gz">
+          <thead>
+            <tr>
+              <th>Aspect</th>
+              <th>Trend</th>
+              <th>Delta</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% if aspect_trends %}
+              {% for item in aspect_trends %}
+              <tr>
+                <td>{{ item.aspect }}</td>
+                <td>{{ item.direction }}</td>
+                <td>{{ item.delta }}</td>
+              </tr>
+              {% endfor %}
+            {% else %}
+              <tr><td colspan="3">Aspect trends will appear after more reviews are analyzed.</td></tr>
+            {% endif %}
+          </tbody>
+        </table>
+      </div>
+
+      <p class="kicker" style="margin-top:1rem;">Language mix</p>
+      <div class="chip-row" style="margin-top:0.45rem;">
+        {% if language_breakdown %}
+          {% for item in language_breakdown %}
+          <span class="chip">{{ item.label|upper }} • {{ item.count }}</span>
+          {% endfor %}
+        {% else %}
+          <span class="chip">No language data yet</span>
+        {% endif %}
+      </div>
+    </section>
+  </section>
+
+  <section class="content-grid reveal">
+    <section class="surface-card">
+      <div class="page-head">
+        <div>
+          <p class="kicker">Recurring Cluster</p>
+          <h2 class="page-title" style="font-size:1.3rem;">What customers are repeating most</h2>
+        </div>
+      </div>
+      {% if dashboard_stats.top_cluster %}
+        <article class="feature-card" style="min-height:auto;">
+          <h3 class="feature-title">{{ dashboard_stats.top_cluster.size }} related reviews</h3>
+          <p class="feature-text">{{ dashboard_stats.top_cluster.summary }}</p>
+          <div class="chip-row" style="margin-top:0.7rem;">
+            {% for term in dashboard_stats.top_cluster.top_terms %}
+            <span class="chip">{{ term }}</span>
+            {% endfor %}
+          </div>
+        </article>
+      {% else %}
+        <article class="feature-card" style="min-height:auto;">
+          <h3 class="feature-title">Cluster summary is waiting for more data</h3>
+          <p class="feature-text">Once the workspace has enough review variety, ReviewSense will group repeated complaints and requests here.</p>
+        </article>
+      {% endif %}
+    </section>
+
+    <section class="surface-card">
+      <div class="page-head">
+        <div>
+          <p class="kicker">Signal Mix</p>
+          <h2 class="page-title" style="font-size:1.3rem;">Intent distribution in recent analysis</h2>
+        </div>
+      </div>
+      <div class="stack-grid">
+        {% if intent_breakdown %}
+          {% for item in intent_breakdown %}
+          <article class="feature-card" style="min-height:auto;">
+            <h3 class="feature-title">{{ item.label|replace('_', ' ')|title }}</h3>
+            <p class="feature-text">{{ item.count }} reviews currently map to this intent.</p>
+          </article>
+          {% endfor %}
+        {% else %}
+          <article class="feature-card" style="min-height:auto;">
+            <h3 class="feature-title">Intent mix not available yet</h3>
+            <p class="feature-text">Upload more reviews to generate intent distribution and stronger routing signals.</p>
+          </article>
+        {% endif %}
+      </div>
+    </section>
   </section>
 </div>
 {% endblock %}

@@ -1,0 +1,35 @@
+version: '3.8'
+
+services:
+  app:
+    build: .
+    ports:
+      - "5000:5000"
+    environment:
+      - DATABASE_URL=${DATABASE_URL}
+      - REDIS_URL=${REDIS_URL:-redis://redis:6379/0}
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY:-dev-jwt-secret-key-12345}
+      - FLASK_SECRET_KEY=${FLASK_SECRET_KEY:-dev-secret}
+    volumes:
+      - ./interninfos:/app
+    command: python app.py
+    depends_on:
+      - redis
+
+  worker:
+    build: .
+    environment:
+      - DATABASE_URL=${DATABASE_URL}
+      - REDIS_URL=${REDIS_URL:-redis://redis:6379/0}
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY:-dev-jwt-secret-key-12345}
+      - FLASK_SECRET_KEY=${FLASK_SECRET_KEY:-dev-secret}
+    volumes:
+      - ./interninfos:/app
+    command: python scripts/rq_worker.py
+    depends_on:
+      - redis
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"

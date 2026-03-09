@@ -27,7 +27,7 @@
   .home-cta {
     position: relative;
     overflow: hidden;
-    border: 1px solid rgba(255, 255, 255, 0.72);
+    border: 1px solid rgba(85, 106, 137, 0.14);
     border-radius: 30px;
     box-shadow: 0 28px 70px rgba(24, 38, 63, 0.1);
     backdrop-filter: blur(18px);
@@ -88,7 +88,7 @@
   .hero-kicker,
   .section-kicker {
     margin: 0;
-    color: rgba(198, 214, 238, 0.82);
+    color: rgba(198, 214, 238, 0.9);
     letter-spacing: 0.16em;
     text-transform: uppercase;
     font-size: 0.74rem;
@@ -116,6 +116,12 @@
     color: rgba(233, 241, 255, 0.9);
     font-size: 0.78rem;
     font-weight: 700;
+  }
+
+  .home-section .timeline-day {
+    color: #28415d;
+    background: rgba(29, 78, 216, 0.08);
+    border: 1px solid rgba(29, 78, 216, 0.12);
   }
 
   .hero-title {
@@ -182,7 +188,7 @@
   .timeline-card,
   .story-step {
     border-radius: 22px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.14);
     background: linear-gradient(180deg, rgba(255, 255, 255, 0.09), rgba(255, 255, 255, 0.04));
     backdrop-filter: blur(14px);
   }
@@ -215,7 +221,7 @@
   .metric-card .section-kicker,
   .timeline-card .section-kicker,
   .story-step .section-kicker {
-    color: #6a7d95;
+    color: #556983;
   }
 
   .board-shell {
@@ -331,12 +337,13 @@
 
   .section-copy {
     max-width: 58ch;
-    color: #5d6d84;
+    color: #4d6078;
   }
 
   .home-section {
     padding: clamp(1.15rem, 2.2vw, 1.5rem);
-    background: rgba(255, 255, 255, 0.68);
+    background: rgba(255, 255, 255, 0.82);
+    border-color: rgba(79, 101, 132, 0.16);
   }
 
   .story-grid {
@@ -376,8 +383,8 @@
   .story-panel {
     padding: 0.9rem;
     border-radius: 20px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    background: linear-gradient(180deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.04));
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
   }
 
   .story-panel h3 {
@@ -386,6 +393,14 @@
 
   .story-panel p {
     margin-top: 0.4rem;
+  }
+
+  .story-panel p:not(.section-kicker) {
+    color: rgba(226, 237, 251, 0.9);
+  }
+
+  .story-panel .section-kicker {
+    color: rgba(205, 220, 243, 0.86);
   }
 
   .story-columns {
@@ -414,14 +429,14 @@
     bottom: 1rem;
     padding: 1rem;
     border-radius: 20px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    background: rgba(255, 255, 255, 0.1);
     color: #eef5ff;
   }
 
   .story-caption p {
     margin-top: 0.42rem;
-    color: rgba(215, 228, 247, 0.78);
+    color: rgba(227, 237, 251, 0.88);
   }
 
   .story-list {
@@ -432,8 +447,8 @@
   .story-step {
     position: relative;
     padding: 1rem 1rem 1rem 4.6rem;
-    border-color: rgba(70, 92, 124, 0.12);
-    background: linear-gradient(180deg, rgba(255, 255, 255, 0.82), rgba(248, 250, 255, 0.96));
+    border-color: rgba(70, 92, 124, 0.18);
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.9), rgba(248, 250, 255, 0.98));
     box-shadow: 0 18px 40px rgba(31, 45, 72, 0.06);
     transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
     cursor: pointer;
@@ -466,7 +481,7 @@
   .feature-card h3,
   .metric-card h3,
   .timeline-card h3 {
-    color: #12213b;
+    color: #10203a;
     font-size: 1.08rem;
   }
 
@@ -474,7 +489,7 @@
   .feature-card > p:not(.section-kicker),
   .metric-card > p:not(.section-kicker),
   .timeline-card > p:not(.section-kicker) {
-    color: #60708a;
+    color: #4e6178;
     margin-top: 0.4rem;
   }
 
@@ -501,27 +516,36 @@
   .metric-card,
   .timeline-card {
     padding: 1rem;
-    background: linear-gradient(180deg, rgba(255, 255, 255, 0.84), rgba(247, 250, 255, 0.96));
-    border-color: rgba(70, 92, 124, 0.1);
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.92), rgba(247, 250, 255, 0.98));
+    border-color: rgba(70, 92, 124, 0.16);
   }
 
   .metric-value {
     margin-top: 0.6rem;
-    color: #11203a;
+    color: #0f1f39;
     font-size: clamp(2rem, 3vw, 2.7rem);
     line-height: 1;
   }
 
   .mini-tag {
     min-height: 32px;
-    background: rgba(33, 58, 149, 0.06);
+    background: rgba(33, 58, 149, 0.09);
     border: 0;
-    color: #36506f;
+    color: #27435f;
+  }
+
+  .story-stage .mini-tag,
+  .story-stage .story-pills .mini-tag,
+  .story-stage .insight-tags .mini-tag {
+    color: #eef5ff;
+    background: rgba(255, 255, 255, 0.12);
+    border: 1px solid rgba(255, 255, 255, 0.14);
   }
 
   .home-cta {
     padding: 1.4rem;
     color: #eef5ff;
+    border-color: rgba(255, 255, 255, 0.18);
     background:
       radial-gradient(560px 280px at 8% 8%, rgba(98, 134, 255, 0.24), transparent 72%),
       radial-gradient(420px 220px at 88% 88%, rgba(109, 217, 255, 0.18), transparent 72%),
@@ -530,6 +554,29 @@
 
   .home-cta p {
     max-width: 54ch;
+    color: rgba(229, 237, 249, 0.88);
+  }
+
+  .home-section .section-kicker,
+  .home-section .section-head .section-kicker {
+    color: #556983;
+  }
+
+  .home-section .timeline-day,
+  .home-section .mini-tag {
+    border: 1px solid rgba(60, 83, 118, 0.1);
+  }
+
+  .home-section .feature-tags .mini-tag,
+  .home-section .insight-tags .mini-tag,
+  .home-section .story-pills .mini-tag {
+    color: #2d4865;
+    background: rgba(29, 78, 216, 0.08);
+  }
+
+  .home-section .table-shell,
+  .home-section .surface-line {
+    border-color: rgba(70, 92, 124, 0.16);
   }
 
   @media (max-width: 1180px) {
@@ -602,38 +649,38 @@
       <div class="hero-copy">
         <div>
           <div class="hero-topline">
-            <p class="hero-kicker">Feedback Intelligence Platform</p>
-            <span class="hero-signal">Realtime clustering, urgency alerts, and release impact</span>
+            <p class="hero-kicker">Customer Feedback Platform</p>
+            <span class="hero-signal">Reviews, tickets, and surveys in one place</span>
           </div>
 
           <h1 class="hero-title">
-            Customer feedback with
-            <span>enterprise polish.</span>
+            See what customers are saying.
+            <span>Know what to fix next.</span>
           </h1>
 
           <p class="hero-text">
-            ReviewSense turns review streams, support tickets, and survey text into a modern operating layer for sentiment movement, issue clustering, emotion detection, and action-ready product decisions.
+            ReviewSense collects customer feedback, shows what people feel, spots recurring problems, and helps your team decide what needs attention first.
           </p>
 
           <div class="hero-actions">
-            <a class="btn-gz btn-primary-gz" href="{{ url_for('main.register') }}">Start Workspace</a>
-            <a class="btn-gz btn-secondary-gz" href="{{ url_for('main.admin_login') }}">Admin Console</a>
-            <a class="btn-gz btn-success-gz" href="{{ url_for('main.login') }}">User Login</a>
+            <a class="btn-gz btn-primary-gz" href="{{ url_for('main.register') }}">Create Account</a>
+            <a class="btn-gz btn-secondary-gz" href="{{ url_for('main.login') }}">User Login</a>
+            <a class="btn-gz btn-success-gz" href="{{ url_for('main.admin_login') }}">Admin Login</a>
           </div>
         </div>
 
         <div class="hero-metrics">
           <article class="hero-metric">
-            <small>Coverage</small>
-            <strong>Sentiment, intent, urgency, aspect mining, and impact scoring.</strong>
+            <small>Sources</small>
+            <strong>Bring together reviews, tickets, surveys, and CSV uploads.</strong>
           </article>
           <article class="hero-metric">
-            <small>Workflows</small>
-            <strong>Built for product, CX, operations, and leadership teams.</strong>
+            <small>Teams</small>
+            <strong>Useful for product, support, operations, and leadership.</strong>
           </article>
           <article class="hero-metric">
             <small>Outcome</small>
-            <strong>Recurring complaints become ranked priorities instead of missed signals.</strong>
+            <strong>Turn repeated complaints into clear priorities for the next fix cycle.</strong>
           </article>
         </div>
       </div>
@@ -641,17 +688,17 @@
       <aside class="board-shell">
         <div class="board-head">
           <div>
-            <p class="hero-kicker">Live Workspace Preview</p>
-            <h2>Premium command center for customer signals</h2>
+            <p class="hero-kicker">Example Workspace</p>
+            <h2>One view of what customers are reporting right now</h2>
           </div>
-          <span class="board-badge">Realtime</span>
+          <span class="board-badge">Live View</span>
         </div>
 
         <div class="board-pulse"><span></span></div>
 
         <div class="board-stats">
           <article class="board-stat">
-            <small>Feedback ingested</small>
+            <small>Feedback loaded</small>
             <strong>27.1k</strong>
           </article>
           <article class="board-stat">
@@ -659,16 +706,16 @@
             <strong>04 high-risk</strong>
           </article>
           <article class="board-stat">
-            <small>Rising clusters</small>
+            <small>Recurring issues</small>
             <strong>12 active</strong>
           </article>
         </div>
 
         <div class="board-main">
           <article class="board-card board-feature">
-            <span>Top Emerging Issue</span>
+            <span>Main issue right now</span>
             <strong>Checkout failures after Android release 3.2.1</strong>
-            <p>Negative share is rising across retry loops, payment timeouts, and delayed confirmation responses.</p>
+            <p>Customers are reporting payment retries, timeouts, and confusing confirmations after the latest update.</p>
             <div class="trend-bars" aria-hidden="true">
               <span style="--h:42%"></span>
               <span style="--h:56%"></span>
@@ -681,19 +728,19 @@
 
           <div style="display:grid; gap:0.7rem;">
             <article class="board-card">
-              <span>Top Cluster</span>
+              <span>Common complaint</span>
               <strong>Refund delay confusion</strong>
-              <p>88 semantically grouped mentions across review uploads and support channels.</p>
+              <p>88 related comments grouped from reviews and support messages.</p>
             </article>
             <article class="board-card">
-              <span>Owner</span>
+              <span>Assigned team</span>
               <strong>Payments squad assigned</strong>
-              <p>Impact score 84/100 with admin escalation already triggered.</p>
+              <p>This issue has already been flagged for the team handling payments.</p>
             </article>
             <article class="board-card">
-              <span>Improvement</span>
+              <span>Recently improved</span>
               <strong>Packaging sentiment recovered</strong>
-              <p>Positive aspect perception stayed above baseline for three consecutive weeks.</p>
+              <p>Packaging feedback has stayed positive for the last three weeks.</p>
             </article>
           </div>
         </div>
@@ -704,10 +751,10 @@
   <section class="home-section reveal">
     <div class="section-head">
       <div>
-        <p class="section-kicker">Workflow Story</p>
-        <h2>Motion-driven walkthrough of the actual product pipeline.</h2>
+        <p class="section-kicker">How It Works</p>
+        <h2>From raw feedback to a clear next step.</h2>
       </div>
-      <p class="section-copy">Hover or scroll through the workflow and the stage updates to show how feedback moves from ingestion to owned action.</p>
+      <p class="section-copy">This section shows the simple path from collecting customer comments to deciding what the team should act on next.</p>
     </div>
 
     <div class="story-grid">
@@ -717,37 +764,37 @@
             <article class="story-panel">
               <p class="section-kicker">App Store</p>
               <h3>18,204 reviews</h3>
-              <p>Daily sync keeps new comments flowing into the same analysis stream.</p>
+              <p>New reviews are pulled into the same shared workspace.</p>
             </article>
             <article class="story-panel">
               <p class="section-kicker">Support Desk</p>
               <h3>2,318 tickets</h3>
-              <p>Operational complaints and feedback sit beside public reviews.</p>
+              <p>Support issues are reviewed alongside public feedback.</p>
             </article>
             <article class="story-panel">
               <p class="section-kicker">CSV Uploads</p>
               <h3>8 active files</h3>
-              <p>Historical batches are normalized and deduplicated automatically.</p>
+              <p>Uploaded files are cleaned and prepared automatically.</p>
             </article>
           </div>
           <div class="story-two-col">
             <article class="story-panel">
-              <p class="section-kicker">Ready For NLP</p>
+              <p class="section-kicker">Ready To Analyze</p>
               <h3>27,112 records</h3>
-              <p>Noise removed, source context attached, queue prepared.</p>
+              <p>Noise is removed and the records are ready for analysis.</p>
             </article>
             <article class="story-panel">
               <p class="section-kicker">Queue Health</p>
               <h3>Stable throughput</h3>
-              <p>Ingestion and preprocessing remain within target latency.</p>
+              <p>The pipeline is processing incoming feedback normally.</p>
             </article>
           </div>
         </div>
 
         <div class="story-visual" data-stage-clip="1">
           <article class="story-panel" style="height:100%;">
-            <p class="section-kicker">Enrichment Layer</p>
-            <h3>Each record gets structured context before model scoring.</h3>
+            <p class="section-kicker">Add Context</p>
+            <h3>Each comment gets helpful labels before scoring starts.</h3>
             <div class="story-pills">
               <span class="mini-tag">language: en</span>
               <span class="mini-tag">channel: support</span>
@@ -780,12 +827,12 @@
             <article class="story-panel">
               <p class="section-kicker">Emotion</p>
               <h3>Frustration</h3>
-              <p>dominant signal</p>
+              <p>main feeling detected</p>
             </article>
             <article class="story-panel">
               <p class="section-kicker">Impact</p>
               <h3>84 / 100</h3>
-              <p>high priority</p>
+              <p>needs attention soon</p>
             </article>
           </div>
         </div>
@@ -793,18 +840,18 @@
         <div class="story-visual" data-stage-clip="3">
           <div class="story-two-col">
             <article class="story-panel">
-              <p class="section-kicker">Rising Cluster</p>
+              <p class="section-kicker">Recurring Issue</p>
               <h3>Mobile checkout retry loop</h3>
               <p>146 mentions, up 31%.</p>
             </article>
             <article class="story-panel">
-              <p class="section-kicker">Rising Cluster</p>
+              <p class="section-kicker">Recurring Issue</p>
               <h3>Delayed refund confirmation</h3>
               <p>88 mentions, up 19%.</p>
             </article>
             <article class="story-panel" style="grid-column:1 / -1;">
-              <p class="section-kicker">Cluster Momentum</p>
-              <h3>Repeated complaints stay visible before churn follows.</h3>
+              <p class="section-kicker">Why This Matters</p>
+              <h3>Repeated complaints stand out before they become bigger customer problems.</h3>
               <div class="cluster-bars" aria-hidden="true">
                 <span style="--h:84%"></span>
                 <span style="--h:58%"></span>
@@ -829,48 +876,48 @@
             <article class="story-panel">
               <p class="section-kicker">Resolved</p>
               <h3>Packaging complaints down</h3>
-              <p>Release impact validated through week-over-week trend movement.</p>
+              <p>The team can see that the change actually improved customer feedback.</p>
             </article>
           </div>
         </div>
 
         <div class="story-caption">
           <p class="section-kicker" style="color:rgba(204,220,243,0.8);">Active Pipeline</p>
-          <h3 id="stageTitle">Capture incoming feedback at scale.</h3>
-          <p id="stageText">Ingest comments from forms, CSV uploads, and support systems in one place.</p>
+          <h3 id="stageTitle">Collect customer feedback in one place.</h3>
+          <p id="stageText">Bring comments from forms, uploads, and support systems into a single workflow.</p>
         </div>
       </aside>
 
       <div class="story-list">
-        <article class="story-step active reveal" data-step="0" data-title="Capture incoming feedback at scale." data-text="Ingest comments from forms, CSV uploads, and support systems in one place.">
+        <article class="story-step active reveal" data-step="0" data-title="Collect customer feedback in one place." data-text="Bring comments from forms, uploads, and support systems into a single workflow.">
           <span class="step-no">01</span>
           <p class="section-kicker">Collection</p>
-          <h3>Unify every customer touchpoint</h3>
-          <p>Pull app reviews, support tickets, and campaign responses into a single stream without manual cleanup.</p>
+          <h3>Collect feedback from every major source</h3>
+          <p>Bring app reviews, support tickets, and uploaded data into one place.</p>
         </article>
-        <article class="story-step reveal" data-step="1" data-title="Enrich each record with useful context." data-text="Normalize text, add metadata, and prepare records for reliable analysis.">
+        <article class="story-step reveal" data-step="1" data-title="Add useful context to each comment." data-text="Label the feedback so the analysis is easier to understand later.">
           <span class="step-no">02</span>
-          <p class="section-kicker">Preparation</p>
-          <h3>Attach context before the model runs</h3>
-          <p>Language, source, release version, region, and urgency are added so trends stay operationally useful.</p>
+          <p class="section-kicker">Context</p>
+          <h3>Add details like source, release, and urgency</h3>
+          <p>These labels make later trends more useful and easier to explain.</p>
         </article>
-        <article class="story-step reveal" data-step="2" data-title="Score sentiment with confidence and intent." data-text="Run layered NLP to expose the true reason behind sentiment movement.">
+        <article class="story-step reveal" data-step="2" data-title="Understand what the feedback is actually saying." data-text="Measure sentiment, intent, emotion, and impact together.">
           <span class="step-no">03</span>
           <p class="section-kicker">Analysis</p>
-          <h3>Score sentiment, intent, emotion, and impact together</h3>
-          <p>Move beyond basic polarity and expose what customers are actually reporting and feeling.</p>
+          <h3>Score feeling, intent, and importance together</h3>
+          <p>Go beyond positive or negative and understand what the customer is really reporting.</p>
         </article>
-        <article class="story-step reveal" data-step="3" data-title="Detect repeated problems before they spread." data-text="Surface clusters and emerging risk zones from unstructured text.">
+        <article class="story-step reveal" data-step="3" data-title="Spot repeated problems quickly." data-text="Group similar complaints so recurring issues are easier to see.">
           <span class="step-no">04</span>
           <p class="section-kicker">Clustering</p>
-          <h3>Reveal recurring issues hidden inside noisy feedback</h3>
-          <p>Semantic grouping keeps repeated friction visible across channels and release windows.</p>
+          <h3>Group similar complaints into clear themes</h3>
+          <p>Repeated problems stop getting buried inside large volumes of text.</p>
         </article>
-        <article class="story-step reveal" data-step="4" data-title="Turn insights into owned action loops." data-text="Assign owners, monitor progress, and confirm whether fixes changed perception.">
+        <article class="story-step reveal" data-step="4" data-title="Turn findings into action." data-text="Assign owners and check whether fixes improved customer feedback.">
           <span class="step-no">05</span>
           <p class="section-kicker">Execution</p>
-          <h3>Convert signal movement into team-owned action</h3>
-          <p>Route priorities to squads, track release impact, and produce stakeholder-ready exports.</p>
+          <h3>Decide what to fix and who should own it</h3>
+          <p>Use the findings to set priorities, assign teams, and track improvement after release.</p>
         </article>
       </div>
     </div>
@@ -879,40 +926,126 @@
   <section class="home-section reveal">
     <div class="section-head">
       <div>
-        <p class="section-kicker">Operating Metrics</p>
-        <h2>Scale indicators with cleaner presentation and animated counts.</h2>
+        <p class="section-kicker">At A Glance</p>
+        <h2>Quick numbers that show the kind of scale the platform can support.</h2>
       </div>
-      <p class="section-copy">The metrics now read like a mature SaaS analytics platform rather than generic counters dropped into the page.</p>
+      <p class="section-copy">These numbers help a visitor understand that the system is designed for real workloads, not just one-off review checks.</p>
     </div>
 
     <div class="metric-grid">
       <article class="metric-card">
         <p class="section-kicker">Reviews Processed</p>
         <div class="metric-value"><span data-count-target="2800000">0</span>+</div>
-        <p>Monthly feedback volume handled across app stores, support systems, and uploaded history.</p>
+        <p>Feedback handled across app stores, support systems, and uploaded files.</p>
       </article>
       <article class="metric-card">
         <p class="section-kicker">Aspects Tracked</p>
         <div class="metric-value"><span data-count-target="1480">0</span></div>
-        <p>Daily aspect tracking keeps teams focused on the journey that is actually breaking down.</p>
+        <p>Track the parts of the customer experience that are improving or getting worse.</p>
       </article>
       <article class="metric-card">
         <p class="section-kicker">Update Latency</p>
         <div class="metric-value"><span data-count-target="8">0</span> min</div>
-        <p>Fast signal refresh means teams are working from current sentiment, not stale summary decks.</p>
+        <p>Keep teams working with current feedback instead of stale reports.</p>
       </article>
       <article class="metric-card">
         <p class="section-kicker">Teams Using Exports</p>
         <div class="metric-value"><span data-count-target="320">0</span></div>
-        <p>Weekly exports support product, operations, and CX planning without manual reporting work.</p>
+        <p>Support recurring reporting for product, operations, and support teams.</p>
+      </article>
+    </div>
+  </section>
+
+  <section class="home-section reveal">
+    <div class="section-head">
+      <div>
+        <p class="section-kicker">Capability Stack</p>
+        <h2>What the platform helps teams do every week.</h2>
+      </div>
+      <p class="section-copy">These are the main jobs the platform helps with after the data is collected.</p>
+    </div>
+
+    <div class="feature-grid">
+      <article class="feature-card">
+        <p class="section-kicker">Overview</p>
+        <h3>See what changed and why it matters</h3>
+        <p>Spot major shifts in customer feedback quickly without reading every comment manually.</p>
+        <div class="feature-tags" style="margin-top:0.85rem;">
+          <span class="mini-tag">trend watch</span>
+          <span class="mini-tag">impact score</span>
+          <span class="mini-tag">alert state</span>
+        </div>
+      </article>
+      <article class="feature-card">
+        <p class="section-kicker">Detail</p>
+        <h3>Understand which part of the experience is causing the issue</h3>
+        <p>Break feedback into areas like checkout, support, delivery, or onboarding so teams know where to focus.</p>
+        <div class="feature-tags" style="margin-top:0.85rem;">
+          <span class="mini-tag">aspect mining</span>
+          <span class="mini-tag">confidence</span>
+          <span class="mini-tag">movement over time</span>
+        </div>
+      </article>
+      <article class="feature-card">
+        <p class="section-kicker">Action</p>
+        <h3>Turn repeated complaints into next steps</h3>
+        <p>Use grouped issues and trend movement to decide what should be fixed, monitored, or escalated.</p>
+        <div class="feature-tags" style="margin-top:0.85rem;">
+          <span class="mini-tag">cluster summary</span>
+          <span class="mini-tag">owner routing</span>
+          <span class="mini-tag">weekly exports</span>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <section class="home-section reveal">
+    <div class="section-head">
+      <div>
+        <p class="section-kicker">Team Rhythm</p>
+        <h2>How teams can use the platform from intake to follow-up.</h2>
+      </div>
+      <p class="section-copy">This keeps the page practical. It explains how the product fits into real review and decision work.</p>
+    </div>
+
+    <div class="timeline-grid">
+      <article class="timeline-card">
+        <span class="timeline-day">Collect</span>
+        <h3>Bring reviews and tickets into one queue</h3>
+        <p>Start by gathering customer comments from the channels your team already uses.</p>
+      </article>
+      <article class="timeline-card">
+        <span class="timeline-day">Enrich</span>
+        <h3>Attach source, release, and urgency context</h3>
+        <p>Add useful context so later analysis is easier to interpret and explain.</p>
+      </article>
+      <article class="timeline-card">
+        <span class="timeline-day">Analyze</span>
+        <h3>Run sentiment, intent, emotion, and impact scoring</h3>
+        <p>Understand both the tone of the feedback and the type of problem being described.</p>
+      </article>
+      <article class="timeline-card">
+        <span class="timeline-day">Cluster</span>
+        <h3>Group repeated complaints into recurring themes</h3>
+        <p>See which complaints are isolated and which ones keep appearing again and again.</p>
+      </article>
+      <article class="timeline-card">
+        <span class="timeline-day">Assign</span>
+        <h3>Push ranked priorities toward the right owner</h3>
+        <p>Help teams align on what matters most and who should act on it.</p>
+      </article>
+      <article class="timeline-card">
+        <span class="timeline-day">Measure</span>
+        <h3>Confirm whether fixes changed customer perception</h3>
+        <p>Check whether customer feedback improved after the fix instead of guessing.</p>
       </article>
     </div>
   </section>
 
   <section class="home-cta reveal">
     <p class="section-kicker">Get Started</p>
-    <h2>Open a landing page that feels like premium software.</h2>
-    <p>Enter the workspace, create a new account, or open the admin console. The visual system now matches the seriousness of the product.</p>
+    <h2>Start with your customer feedback and turn it into something useful.</h2>
+    <p>Create an account, sign in, or open the admin side of the platform.</p>
     <div class="cta-actions" style="margin-top:1rem;">
       <a class="btn-gz btn-primary-gz" href="{{ url_for('main.login') }}">Enter Workspace</a>
       <a class="btn-gz btn-secondary-gz" href="{{ url_for('main.register') }}">Create Account</a>

@@ -1,4 +1,4 @@
-﻿{% extends "base.html" %}
+{% extends "base.html" %}
 {% block title %}Sentiment Trends | ReviewSense{% endblock %}
 
 {% block navbar %}
@@ -16,41 +16,66 @@
 {% endblock %}
 
 {% block content %}
-{% set positive_total = positive_counts|sum %}
-{% set negative_total = negative_counts|sum %}
-{% set neutral_total = neutral_counts|sum %}
-
 <div class="app-shell">
   <section class="app-hero reveal">
     <div class="app-hero-grid">
       <div class="app-hero-copy">
         <div>
           <p class="kicker" style="color:rgba(218,235,255,0.8);">Trend Intelligence</p>
-          <h1 class="app-hero-title">Track overall sentiment movement across time.</h1>
-          <p class="app-hero-text">Use this view to understand how positive, negative, and neutral review volume is shifting in the workspace.</p>
+          <h1 class="app-hero-title">Track sentiment movement across {{ range_label|lower }}.</h1>
+          <p class="app-hero-text">Compare positive, negative, and neutral volume over time, watch for spikes, and use the selected range to focus on the period that matters.</p>
         </div>
+
+        <div class="hero-action-row">
+          {% for key, meta in range_options.items() %}
+          <a
+            class="btn-gz {% if key == selected_range %}btn-primary-gz{% else %}btn-secondary-gz{% endif %}"
+            href="{{ url_for('main.sentiment_trends', range=key) }}"
+          >
+            {{ meta.label }}
+          </a>
+          {% endfor %}
+        </div>
+
         <div class="hero-stat-row">
           <article class="hero-stat">
-            <small>Positive Total</small>
-            <strong>{{ positive_total }}</strong>
+            <small>Total Reviews</small>
+            <strong>{{ trend_summary.total_reviews }}</strong>
           </article>
           <article class="hero-stat">
-            <small>Negative Total</small>
-            <strong>{{ negative_total }}</strong>
+            <small>Positive Share</small>
+            <strong>{{ trend_summary.positive_share }}%</strong>
           </article>
           <article class="hero-stat">
-            <small>Neutral Total</small>
-            <strong>{{ neutral_total }}</strong>
+            <small>Negative Share</small>
+            <strong>{{ trend_summary.negative_share }}%</strong>
           </article>
         </div>
       </div>
 
       <aside class="hero-side-card">
         <div>
-          <p class="kicker" style="color:rgba(218,235,255,0.8);">Reading The Trend</p>
-          <strong>Look for sudden negative spikes and sustained positive recovery.</strong>
+          <p class="kicker" style="color:rgba(218,235,255,0.8);">Comparison</p>
+          {% if comparison_summary %}
+          <strong>
+            {% if comparison_summary.volume_delta >= 0 %}+{% endif %}{{ comparison_summary.volume_delta }}
+            reviews vs {{ comparison_summary.label|lower }}.
+          </strong>
+          {% else %}
+          <strong>All-time view active. Narrow the range to compare periods.</strong>
+          {% endif %}
         </div>
-        <p class="page-subtitle">This chart is most useful after major releases, campaign pushes, or support backlog changes.</p>
+        <p class="page-subtitle">
+          {% if comparison_summary %}
+          Positive delta: {% if comparison_summary.positive_delta >= 0 %}+{% endif %}{{ comparison_summary.positive_delta }}.
+          Negative delta: {% if comparison_summary.negative_delta >= 0 %}+{% endif %}{{ comparison_summary.negative_delta }}.
+          {% if comparison_summary.volume_delta_pct is not none %}
+          Volume change: {{ comparison_summary.volume_delta_pct }}%.
+          {% endif %}
+          {% else %}
+          Use shorter windows to isolate release impact, campaign feedback, or support-driven sentiment swings.
+          {% endif %}
+        </p>
       </aside>
     </div>
   </section>
@@ -58,8 +83,51 @@
   <section class="surface-card reveal">
     <div class="page-head">
       <div>
+        <p class="kicker">Trend Summary</p>
+        <h2 class="page-title" style="font-size:1.3rem;">Selected window health signals</h2>
+      </div>
+    </div>
+    <div class="metric-grid">
+      <article class="metric-card">
+        <div class="metric-label">Avg Daily Volume</div>
+        <div class="metric-value">{{ trend_summary.avg_daily_volume }}</div>
+        <p class="page-subtitle">Average number of reviews per day in this range.</p>
+      </article>
+      <article class="metric-card">
+        <div class="metric-label">Avg Confidence</div>
+        <div class="metric-value">{{ '%.2f'|format(trend_summary.avg_sentiment_score) }}</div>
+        <p class="page-subtitle">Mean sentiment confidence for the selected period.</p>
+      </article>
+      <article class="metric-card">
+        <div class="metric-label">Best Day</div>
+        <div class="metric-value" style="font-size:1.2rem;">{{ best_day.label if best_day else 'N/A' }}</div>
+        <p class="page-subtitle">
+          {% if best_day %}
+          Balance {{ best_day.balance }} with {{ best_day.positive_count }} positive reviews.
+          {% else %}
+          Not enough reviews in this range yet.
+          {% endif %}
+        </p>
+      </article>
+      <article class="metric-card">
+        <div class="metric-label">Risk Day</div>
+        <div class="metric-value" style="font-size:1.2rem;">{{ risk_day.label if risk_day else 'N/A' }}</div>
+        <p class="page-subtitle">
+          {% if risk_day %}
+          {{ risk_day.negative_count }} negative reviews out of {{ risk_day.total_count }} total.
+          {% else %}
+          Not enough reviews in this range yet.
+          {% endif %}
+        </p>
+      </article>
+    </div>
+  </section>
+
+  <section class="surface-card reveal">
+    <div class="page-head">
+      <div>
         <p class="kicker">Sentiment Timeline</p>
-        <h2 class="page-title" style="font-size:1.24rem;">Positive, negative, and neutral movement</h2>
+        <h2 class="page-title" style="font-size:1.24rem;">Daily movement with total volume overlay</h2>
       </div>
     </div>
     <div class="g-card" style="border-radius:18px;">
@@ -67,6 +135,68 @@
         <canvas id="trendChart" height="120"></canvas>
       </div>
     </div>
+  </section>
+
+  <section class="content-grid reveal">
+    <section class="surface-card">
+      <div class="page-head">
+        <div>
+          <p class="kicker">Notable Days</p>
+          <h2 class="page-title" style="font-size:1.24rem;">Where negative pressure stood out</h2>
+        </div>
+      </div>
+      <div class="table-shell">
+        <table class="table-gz">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Positive</th>
+              <th>Negative</th>
+              <th>Neutral</th>
+              <th>Total</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% if notable_days %}
+              {% for day in notable_days %}
+              <tr>
+                <td>{{ day.label }}</td>
+                <td>{{ day.positive_count }}</td>
+                <td>{{ day.negative_count }}</td>
+                <td>{{ day.neutral_count }}</td>
+                <td>{{ day.total_count }}</td>
+              </tr>
+              {% endfor %}
+            {% else %}
+              <tr><td colspan="5">No activity in the selected range yet.</td></tr>
+            {% endif %}
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="surface-card">
+      <div class="page-head">
+        <div>
+          <p class="kicker">How To Read It</p>
+          <h2 class="page-title" style="font-size:1.24rem;">Use the chart like an operator</h2>
+        </div>
+      </div>
+      <div class="stack-grid">
+        <article class="feature-card" style="min-height:auto;">
+          <h3 class="feature-title">Look for negative spikes</h3>
+          <p class="feature-text">Sudden negative surges usually map to a release issue, policy change, or support breakdown.</p>
+        </article>
+        <article class="feature-card" style="min-height:auto;">
+          <h3 class="feature-title">Watch total volume too</h3>
+          <p class="feature-text">A big sentiment move with low volume may be noise. The dashed total line helps separate signal from isolated comments.</p>
+        </article>
+        <article class="feature-card" style="min-height:auto;">
+          <h3 class="feature-title">Compare windows after launches</h3>
+          <p class="feature-text">The period comparison is most useful before and after releases, campaigns, migrations, and backlog cleanup cycles.</p>
+        </article>
+      </div>
+    </section>
   </section>
 </div>
 {% endblock %}
@@ -83,7 +213,7 @@
           label: 'Positive',
           data: {{ positive_counts|tojson }},
           borderColor: '#16c16f',
-          backgroundColor: 'rgba(22,193,111,0.2)',
+          backgroundColor: 'rgba(22,193,111,0.16)',
           fill: true,
           tension: 0.3
         },
@@ -91,7 +221,7 @@
           label: 'Negative',
           data: {{ negative_counts|tojson }},
           borderColor: '#f14f55',
-          backgroundColor: 'rgba(241,79,85,0.16)',
+          backgroundColor: 'rgba(241,79,85,0.12)',
           fill: true,
           tension: 0.3
         },
@@ -99,14 +229,24 @@
           label: 'Neutral',
           data: {{ neutral_counts|tojson }},
           borderColor: '#ffb020',
-          backgroundColor: 'rgba(255,176,32,0.18)',
+          backgroundColor: 'rgba(255,176,32,0.12)',
           fill: true,
           tension: 0.3
+        },
+        {
+          label: 'Total Volume',
+          data: {{ total_counts|tojson }},
+          borderColor: '#214063',
+          borderDash: [8, 6],
+          pointRadius: 2,
+          fill: false,
+          tension: 0.25
         }
       ]
     },
     options: {
       responsive: true,
+      interaction: { mode: 'index', intersect: false },
       plugins: { legend: { position: 'bottom' } },
       scales: { y: { beginAtZero: true } }
     }

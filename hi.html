@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User & Admin Capabilities</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #111827;
+        }
+        .gradient-text {
+            background: linear-gradient(to right, #a78bfa, #c4b5fd);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .card {
+            background-color: rgba(31, 41, 55, 0.4);
+            border: 1px solid rgba(75, 85, 99, 0.4);
+            border-radius: 1.5rem;
+            padding: 2rem;
+            backdrop-filter: blur(5px);
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+        .card-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        .card-icon {
+            width: 40px;
+            height: 40px;
+            color: #a78bfa;
+            background-color: rgba(167, 139, 250, 0.1);
+            border-radius: 50%;
+            padding: 8px;
+            flex-shrink: 0;
+        }
+        .card-title {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: #d1d5db;
+        }
+        .feature-list {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            text-align: left;
+        }
+        .feature-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.75rem;
+            color: #d1d5db;
+        }
+        .feature-item svg {
+            color: #84cc16; /* Green checkmark */
+            flex-shrink: 0;
+            margin-top: 0.25rem;
+        }
+    </style>
+</head>
+<body class="text-white flex items-center justify-center min-h-screen p-4 sm:p-6 lg:p-8 bg-gradient-to-br from-gray-900 via-black to-indigo-900">
+
+    <div class="w-full max-w-7xl mx-auto">
+        <!-- Header Section --><header class="text-center mb-12">
+            <h1 class="text-4xl sm:text-5xl font-extrabold tracking-tight">
+                <span class="gradient-text">User & Admin Capabilities</span>
+            </h1>
+            <p class="mt-4 text-lg text-gray-400 max-w-3xl mx-auto">Tailored functionality for every role, ensuring comprehensive control and insights.</p>
+        </header>
+
+        <!-- Two-column layout for User and Admin --><main class="grid grid-cols-1 lg:grid-cols-2 gap-8 items-stretch">
+
+            <!-- User Capabilities Card --><div class="card">
+                <div class="card-header">
+                    <div class="card-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" /></svg>
+                    </div>
+                    <h2 class="card-title">User Functions</h2>
+                </div>
+                <div class="feature-list">
+                    <div class="feature-item">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" /></svg>
+                        <span><strong>Secure Account Management:</strong> Register, log in, and manage personal data securely.</span>
+                    </div>
+                    <div class="feature-item">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" /></svg>
+                        <span><strong>Flexible Review Input:</strong> Upload CSV files or paste raw text for analysis.</span>
+                    </div>
+                    <div class="feature-item">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" /></svg>
+                        <span><strong>Granular Sentiment Analysis:</strong> Obtain overall and aspect-specific sentiment with confidence scores.</span>
+                    </div>
+                    <div class="feature-item">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" /></svg>
+                        <span><strong>Nuanced Context Understanding:</strong> Detects sarcasm and handles negations for higher accuracy.</span>
+                    </div>
+                    <div class="feature-item">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" /></svg>
+                        <span><strong>Interactive Dashboards:</strong> Visualize sentiment trends and aspect distributions.</span>
+                    </div>
+                    <div class="feature-item">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" /></svg>
+                        <span><strong>Professional Report Export:</strong> Generate detailed Excel and PDF reports with charts.</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Admin Capabilities Card --><div class="card">
+                <div class="card-header">
+                    <div class="card-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.125 1.125 0 011.924.935c.319 1.157 1.244 2.082 2.397 2.397a1.125 1.125 0 01.935 1.924c1.756.426 1.756 2.924 0 3.35a1.125 1.125 0 01-.935 1.924c-1.157.319-2.082 1.244-2.397 2.397a1.125 1.125 0 01-1.924.935c-.426 1.756-2.924 1.756-3.35 0a1.125 1.125 0 01-1.924-.935c-1.157-.319-2.082-1.244-2.397-2.397a1.125 1.125 0 01-.935-1.924c-1.756-.426-1.756-2.924 0-3.35a1.125 1.125 0 01.935-1.924c1.157-.319 2.082-1.244 2.397-2.397a1.125 1.125 0 011.924-.935z" /><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+                    </div>
+                    <h2 class="card-title">Admin Functions</h2>
+                </div>
+                <div class="feature-list">
+                     <div class="feature-item">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" /></svg>
+                        <span><strong>Role-Based Access Control:</strong> Secure login to a dedicated admin panel.</span>
+                    </div>
+                    <div class="feature-item">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" /></svg>
+                        <span><strong>Comprehensive User Management:</strong> Oversee and manage all registered users.</span>
+                    </div>
+                    <div class="feature-item">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" /></svg>
+                        <span><strong>System-Wide Monitoring:</strong> Track overall sentiment trends and usage statistics.</span>
+                    </div>
+                    <div class="feature-item">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" /></svg>
+                        <span><strong>Analysis Quality Review:</strong> Evaluate accuracy of sentiment and aspect extraction models.</span>
+                    </div>
+                    <div class="feature-item">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" /></svg>
+                        <span><strong>Centralized Data Oversight:</strong> Access and manage all processed review data.</span>
+                    </div>
+                    <div class="feature-item">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" /></svg>
+                        <span><strong>Configurable Settings:</strong> Manage predefined aspect categories.</span>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+</body>
+</html>
