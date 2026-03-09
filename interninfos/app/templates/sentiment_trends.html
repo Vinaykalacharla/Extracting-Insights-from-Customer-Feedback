@@ -1,0 +1,115 @@
+﻿{% extends "base.html" %}
+{% block title %}Sentiment Trends | ReviewSense{% endblock %}
+
+{% block navbar %}
+<header class="site-nav reveal">
+  <div class="nav-inner">
+    <a class="brand-mark" href="{{ url_for('main.dashboard') }}"><span class="brand-dot"></span>ReviewSense</a>
+    <nav class="nav-links">
+      <a class="nav-link-modern" href="{{ url_for('main.dashboard') }}">Dashboard</a>
+      <a class="nav-link-modern" href="{{ url_for('main.profile') }}">Profile</a>
+      <a class="nav-link-modern active" href="{{ url_for('main.sentiment_trends') }}">Trends</a>
+      <a class="nav-link-modern" href="{{ url_for('main.logout') }}">Logout</a>
+    </nav>
+  </div>
+</header>
+{% endblock %}
+
+{% block content %}
+{% set positive_total = positive_counts|sum %}
+{% set negative_total = negative_counts|sum %}
+{% set neutral_total = neutral_counts|sum %}
+
+<div class="app-shell">
+  <section class="app-hero reveal">
+    <div class="app-hero-grid">
+      <div class="app-hero-copy">
+        <div>
+          <p class="kicker" style="color:rgba(218,235,255,0.8);">Trend Intelligence</p>
+          <h1 class="app-hero-title">Track overall sentiment movement across time.</h1>
+          <p class="app-hero-text">Use this view to understand how positive, negative, and neutral review volume is shifting in the workspace.</p>
+        </div>
+        <div class="hero-stat-row">
+          <article class="hero-stat">
+            <small>Positive Total</small>
+            <strong>{{ positive_total }}</strong>
+          </article>
+          <article class="hero-stat">
+            <small>Negative Total</small>
+            <strong>{{ negative_total }}</strong>
+          </article>
+          <article class="hero-stat">
+            <small>Neutral Total</small>
+            <strong>{{ neutral_total }}</strong>
+          </article>
+        </div>
+      </div>
+
+      <aside class="hero-side-card">
+        <div>
+          <p class="kicker" style="color:rgba(218,235,255,0.8);">Reading The Trend</p>
+          <strong>Look for sudden negative spikes and sustained positive recovery.</strong>
+        </div>
+        <p class="page-subtitle">This chart is most useful after major releases, campaign pushes, or support backlog changes.</p>
+      </aside>
+    </div>
+  </section>
+
+  <section class="surface-card reveal">
+    <div class="page-head">
+      <div>
+        <p class="kicker">Sentiment Timeline</p>
+        <h2 class="page-title" style="font-size:1.24rem;">Positive, negative, and neutral movement</h2>
+      </div>
+    </div>
+    <div class="g-card" style="border-radius:18px;">
+      <div class="g-card-pad" style="padding:0.8rem;">
+        <canvas id="trendChart" height="120"></canvas>
+      </div>
+    </div>
+  </section>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+  new Chart(document.getElementById('trendChart'), {
+    type: 'line',
+    data: {
+      labels: {{ dates|tojson }},
+      datasets: [
+        {
+          label: 'Positive',
+          data: {{ positive_counts|tojson }},
+          borderColor: '#16c16f',
+          backgroundColor: 'rgba(22,193,111,0.2)',
+          fill: true,
+          tension: 0.3
+        },
+        {
+          label: 'Negative',
+          data: {{ negative_counts|tojson }},
+          borderColor: '#f14f55',
+          backgroundColor: 'rgba(241,79,85,0.16)',
+          fill: true,
+          tension: 0.3
+        },
+        {
+          label: 'Neutral',
+          data: {{ neutral_counts|tojson }},
+          borderColor: '#ffb020',
+          backgroundColor: 'rgba(255,176,32,0.18)',
+          fill: true,
+          tension: 0.3
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      plugins: { legend: { position: 'bottom' } },
+      scales: { y: { beginAtZero: true } }
+    }
+  });
+</script>
+{% endblock %}

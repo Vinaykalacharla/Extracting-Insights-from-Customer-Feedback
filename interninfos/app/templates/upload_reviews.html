@@ -1,99 +1,274 @@
 {% extends "base.html" %}
-
 {% block title %}Upload Reviews | ReviewSense{% endblock %}
 
+{% block navbar %}
+<header class="site-nav reveal">
+  <div class="nav-inner">
+    <a class="brand-mark" href="{{ url_for('main.dashboard') }}"><span class="brand-dot"></span>ReviewSense</a>
+    <nav class="nav-links">
+      <a class="nav-link-modern" href="{{ url_for('main.dashboard') }}">Dashboard</a>
+      <a class="nav-link-modern" href="{{ url_for('main.profile') }}">Profile</a>
+      <a class="nav-link-modern active" href="{{ url_for('main.upload_review') }}">Upload</a>
+      <a class="nav-link-modern" href="{{ url_for('main.settings') }}">Settings</a>
+      <a class="nav-link-modern" href="{{ url_for('main.logout') }}">Logout</a>
+    </nav>
+  </div>
+</header>
+{% endblock %}
+
 {% block content %}
-<style>
-  body {
-    font-family: 'Poppins', sans-serif;
-    background: linear-gradient(rgba(7, 4, 21, 0.7), #070415), url('https://images.unsplash.com/photo-1587620962725-abab7fe55159?auto=format&fit=crop&w=1800&q=80') no-repeat center center/cover;
-    color: #c5c1d9;
-    min-height: 100vh;
-  }
-  .upload-card {
-    background: linear-gradient(145deg, rgba(22, 17, 47, 0.7), rgba(15, 12, 32, 0.8));
-    border-radius: 20px;
-    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.5);
-    border: 1px solid rgba(138, 43, 226, 0.3);
-    padding: 2rem;
-    margin-top: 4rem;
-  }
-  .upload-image {
-    width: 100px;
-    margin: 0 auto 1.5rem auto;
-    display: block;
-  }
-  .card-title {
-    font-size: 2rem;
-    color: #fff;
-    text-align: center;
-    margin-bottom: 1.5rem;
-  }
-  .btn {
-    font-family: 'Poppins', sans-serif;
-  }
-  .btn-primary {
-    background: linear-gradient(90deg, #8A2BE2, #4B0082);
-    border: none;
-  }
-  .btn-primary:hover {
-    background: linear-gradient(90deg, #4B0082, #8A2BE2);
-  }
-</style>
-<div class="container">
-  <div class="row justify-content-center">
-    <div class="col-md-8">
-      <div class="upload-card">
-        <img src="https://cdn-icons-png.flaticon.com/512/1828/1828919.png" alt="Upload" class="upload-image">
-        <h2 class="card-title">Upload Reviews</h2>
-        {% with messages = get_flashed_messages(with_categories=true) %}
-          {% if messages %}
-          {% for category, message in messages %}
-            <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
-            {{ message }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-            </div>
-          {% endfor %}
-          {% endif %}
-        {% endwith %}
-        <div class="card mb-4">
-          <div class="card-header bg-secondary text-white">Submit a Review</div>
-          <div class="card-body">
-            <form method="POST">
-              <div class="mb-3">
-                <textarea class="form-control" name="raw_review" rows="4" placeholder="Write your review here..."></textarea>
-              </div>
-              <button type="submit" class="btn btn-primary">Submit Review</button>
-            </form>
-          </div>
+<div class="app-shell">
+  <section class="app-hero reveal">
+    <div class="app-hero-grid">
+      <div class="app-hero-copy">
+        <div>
+          <p class="kicker" style="color:rgba(218,235,255,0.8);">Upload Center</p>
+          <h1 class="app-hero-title">Bring new customer feedback into the analysis pipeline.</h1>
+          <p class="app-hero-text">Analyze one review instantly or ingest a CSV batch. The workspace will score sentiment, intent, urgency, language, impact, and deeper aspect signals automatically.</p>
         </div>
-        <div class="card mb-4">
-          <div class="card-header bg-primary text-white">Upload CSV File</div>
-          <div class="card-body">
-            <form method="POST" enctype="multipart/form-data">
-              <div class="mb-3">
-                <label for="file" class="form-label">Choose CSV File</label>
-                <input type="file" class="form-control" name="file" id="file" accept=".csv">
-              </div>
-              <button type="submit" class="btn btn-primary">Upload</button>
-            </form>
-          </div>
+        <div class="hero-stat-row">
+          <article class="hero-stat">
+            <small>Recent Uploads</small>
+            <strong>{{ upload_summary.recent_count }}</strong>
+          </article>
+          <article class="hero-stat">
+            <small>Positive Share</small>
+            <strong>{{ upload_summary.positive_share }}%</strong>
+          </article>
+          <article class="hero-stat">
+            <small>High Urgency</small>
+            <strong>{{ upload_summary.high_urgency_count }}</strong>
+          </article>
         </div>
       </div>
+
+      <aside class="hero-side-card">
+        <div>
+          <p class="kicker" style="color:rgba(218,235,255,0.8);">Upload Snapshot</p>
+          <strong>{{ upload_summary.dominant_intent|replace('_', ' ')|title }} is the most common recent intent.</strong>
+        </div>
+        <p class="page-subtitle">
+          Average sentiment confidence: <strong>{{ '%.2f'|format(upload_summary.avg_confidence) }}</strong>.
+          {% if upload_summary.latest_upload %}
+          Last upload was saved on {{ upload_summary.latest_upload.strftime('%b %d, %Y at %H:%M') }}.
+          {% else %}
+          Start with a single review or a CSV with a <code>review_text</code> column.
+          {% endif %}
+        </p>
+        <ul class="list-clean" style="color:rgba(214,227,245,0.82);">
+          <li>UTF-8 CSV is recommended.</li>
+          <li>Empty rows are skipped automatically.</li>
+          <li>Deep analysis runs after every successful upload.</li>
+        </ul>
+      </aside>
     </div>
-  </div>
+  </section>
+
+  <section class="content-grid reveal">
+    <section class="surface-card">
+      <p class="kicker">Single Review</p>
+      <h2 class="page-title" style="font-size:1.3rem;">Analyze text instantly</h2>
+      <p class="page-subtitle">Paste one customer comment, review the live input helper, and save the analysis immediately.</p>
+
+      <form method="POST" class="form-grid" style="margin-top:0.9rem;">
+        {{ csrf_form_input() }}
+        <div>
+          <label class="label-gz" for="raw_review">Review text</label>
+          <textarea class="input-gz" id="raw_review" name="raw_review" rows="8" placeholder="Write customer feedback here"></textarea>
+        </div>
+        <div class="callout-strip">
+          <span id="charCount">0 characters</span>
+          <span id="wordCount">0 words</span>
+          <span id="qualityHint">Add enough detail for better analysis.</span>
+        </div>
+        <button class="btn-gz btn-primary-gz" type="submit">Analyze + Save</button>
+      </form>
+    </section>
+
+    <section class="surface-card">
+      <p class="kicker">Batch Import</p>
+      <h2 class="page-title" style="font-size:1.3rem;">CSV pipeline</h2>
+      <p class="page-subtitle">Upload a spreadsheet and preview the file locally before sending it into the workspace.</p>
+
+      <form method="POST" enctype="multipart/form-data" class="form-grid" style="margin-top:0.9rem;">
+        {{ csrf_form_input() }}
+        <div>
+          <label class="label-gz" for="file">CSV file</label>
+          <input class="input-gz" type="file" id="file" name="file" accept=".csv">
+        </div>
+        <div class="callout-strip">
+          <span id="fileName">No file selected</span>
+          <span id="filePreviewStatus">Waiting for preview</span>
+        </div>
+        <button class="btn-gz btn-success-gz" type="submit">Upload CSV</button>
+      </form>
+    </section>
+  </section>
+
+  <section class="content-grid reveal">
+    <section class="surface-card">
+      <div class="page-head">
+        <div>
+          <p class="kicker">Input Assistant</p>
+          <h2 class="page-title" style="font-size:1.24rem;">What strong input looks like</h2>
+        </div>
+      </div>
+      <div class="stack-grid">
+        <article class="feature-card" style="min-height:auto;">
+          <h3 class="feature-title">Capture the actual complaint or praise</h3>
+          <p class="feature-text">Specific comments about onboarding, billing, speed, or support create better aspect extraction than generic statements.</p>
+        </article>
+        <article class="feature-card" style="min-height:auto;">
+          <h3 class="feature-title">Include urgency when it matters</h3>
+          <p class="feature-text">Words like “blocked”, “refund”, “broken”, or “immediately” help the urgency and impact models prioritize correctly.</p>
+        </article>
+        <article class="g-card">
+          <div class="g-card-pad">
+            <p class="kicker">CSV example</p>
+            <pre style="margin:0.6rem 0 0; white-space:pre-wrap; color:var(--text); font-size:0.92rem;">review_text
+The app crashes after checkout and I need a refund.
+Love the new dashboard, the export is much faster now.
+Support took too long to answer my billing question.</pre>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section class="surface-card">
+      <div class="page-head">
+        <div>
+          <p class="kicker">Local File Preview</p>
+          <h2 class="page-title" style="font-size:1.24rem;">Inspect the first few lines before upload</h2>
+        </div>
+      </div>
+      <div class="g-card" style="min-height:280px;">
+        <div class="g-card-pad" id="csvPreviewBox">
+          <p class="page-subtitle">Choose a CSV file to preview the header and first few rows.</p>
+        </div>
+      </div>
+    </section>
+  </section>
+
+  <section class="surface-card reveal">
+    <div class="page-head">
+      <div>
+        <p class="kicker">Recent Uploads</p>
+        <h2 class="page-title" style="font-size:1.24rem;">Latest analysis saved to your account</h2>
+        <p class="page-subtitle">Recent records include intent and urgency so you can quickly judge what kind of feedback is entering the pipeline.</p>
+      </div>
+    </div>
+
+    <div class="table-shell">
+      <table class="table-gz">
+        <thead>
+          <tr>
+            <th>Uploaded At</th>
+            <th>Review</th>
+            <th>Sentiment</th>
+            <th>Intent</th>
+            <th>Urgency</th>
+            <th>Impact</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% if reviews %}
+            {% for review in reviews %}
+            {% set s = (review.overall_sentiment or 'neutral')|lower %}
+            <tr>
+              <td>{{ review.uploaded_at.strftime('%Y-%m-%d %H:%M') if review.uploaded_at else '-' }}</td>
+              <td>{{ review.review_text[:150] }}{% if review.review_text|length > 150 %}...{% endif %}</td>
+              <td>
+                <span class="badge-gz {% if s == 'positive' %}badge-pos{% elif s == 'negative' %}badge-neg{% else %}badge-neu{% endif %}">
+                  {{ review.overall_sentiment or 'Neutral' }}
+                </span>
+              </td>
+              <td>{{ review.intent_label|replace('_', ' ')|title }}</td>
+              <td>
+                <span class="badge-gz {% if review.urgency_level == 'high' %}badge-neg{% elif review.urgency_level == 'medium' %}badge-neu{% else %}badge-pos{% endif %}">
+                  {{ review.urgency_level|title }}
+                </span>
+              </td>
+              <td>{{ '%.1f'|format(review.impact_score or 0) }}</td>
+            </tr>
+            {% endfor %}
+          {% else %}
+            <tr><td colspan="6">No uploads yet.</td></tr>
+          {% endif %}
+        </tbody>
+      </table>
+    </div>
+  </section>
 </div>
 {% endblock %}
 
 {% block extra_js %}
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-  setTimeout(() => {
-    let alerts = document.querySelectorAll('.alert');
-    alerts.forEach(alert => {
-      let bsAlert = new bootstrap.Alert(alert);
-      bsAlert.close();
-    });
-  }, 3000);
+  const reviewBox = document.getElementById('raw_review');
+  const charCount = document.getElementById('charCount');
+  const wordCount = document.getElementById('wordCount');
+  const qualityHint = document.getElementById('qualityHint');
+  const fileInput = document.getElementById('file');
+  const fileName = document.getElementById('fileName');
+  const filePreviewStatus = document.getElementById('filePreviewStatus');
+  const csvPreviewBox = document.getElementById('csvPreviewBox');
+
+  function updateReviewStats() {
+    const value = reviewBox.value.trim();
+    const words = value ? value.split(/\s+/).length : 0;
+    charCount.textContent = `${value.length} characters`;
+    wordCount.textContent = `${words} words`;
+
+    if (!value) {
+      qualityHint.textContent = 'Add enough detail for better analysis.';
+    } else if (words < 8) {
+      qualityHint.textContent = 'Short input works, but more detail improves aspect detection.';
+    } else if (words < 20) {
+      qualityHint.textContent = 'Good length for basic sentiment and intent analysis.';
+    } else {
+      qualityHint.textContent = 'Rich input detected. Aspect and urgency analysis should be stronger.';
+    }
+  }
+
+  async function previewCsvFile(file) {
+    fileName.textContent = file ? file.name : 'No file selected';
+    if (!file) {
+      filePreviewStatus.textContent = 'Waiting for preview';
+      csvPreviewBox.innerHTML = '<p class="page-subtitle">Choose a CSV file to preview the header and first few rows.</p>';
+      return;
+    }
+
+    try {
+      const text = await file.text();
+      const lines = text.split(/\r?\n/).filter(Boolean).slice(0, 6);
+      if (!lines.length) {
+        filePreviewStatus.textContent = 'Empty file';
+        csvPreviewBox.innerHTML = '<p class="page-subtitle">The selected file appears to be empty.</p>';
+        return;
+      }
+
+      const header = lines[0];
+      const bodyRows = lines.slice(1);
+      const hasReviewText = header.split(',').map((item) => item.trim()).includes('review_text');
+      filePreviewStatus.textContent = hasReviewText ? 'review_text column found' : 'Missing review_text column';
+
+      const previewRows = bodyRows.length
+        ? bodyRows.map((row) => `<li>${row.replaceAll('<', '&lt;').replaceAll('>', '&gt;')}</li>`).join('')
+        : '<li>No data rows detected in the first preview block.</li>';
+
+      csvPreviewBox.innerHTML = `
+        <p class="kicker">Header</p>
+        <p class="page-subtitle" style="margin-top:0.35rem;">${header.replaceAll('<', '&lt;').replaceAll('>', '&gt;')}</p>
+        <p class="kicker" style="margin-top:1rem;">First rows</p>
+        <ul class="list-clean" style="margin-top:0.45rem;">${previewRows}</ul>
+      `;
+    } catch (err) {
+      filePreviewStatus.textContent = 'Preview unavailable';
+      csvPreviewBox.innerHTML = '<p class="page-subtitle">Unable to preview the selected file locally.</p>';
+    }
+  }
+
+  reviewBox.addEventListener('input', updateReviewStats);
+  fileInput.addEventListener('change', () => previewCsvFile(fileInput.files[0]));
+  updateReviewStats();
 </script>
 {% endblock %}

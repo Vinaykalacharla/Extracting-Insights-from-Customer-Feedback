@@ -1,951 +1,474 @@
 {% extends "base.html" %}
-
-{% block title %}User Profile | ReviewSense{% endblock %}
-
-{% block extra_css %}
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-{% endblock %}
+{% block title %}Profile | ReviewSense{% endblock %}
 
 {% block navbar %}
-<nav
-  class="navbar navbar-expand-lg navbar-dark shadow-sm"
-  style="
-    background: linear-gradient(90deg, #18132b 80%, #4b0082 100%);
-    font-family: 'Poppins', sans-serif;
-  "
->
-  <div class="container-fluid">
-    <a
-      class="navbar-brand fw-bold text-white"
-      href="#"
-      style="font-size: 1.7rem; letter-spacing: 1px"
-    >
-      User Profile
-    </a>
-    <button
-      class="navbar-toggler"
-      type="button"
-      data-bs-toggle="collapse"
-      data-bs-target="#navbarNav"
-      aria-controls="navbarNav"
-      aria-expanded="false"
-      aria-label="Toggle navigation"
-    >
-      <span class="navbar-toggler-icon"></span>
-    </button>
-    <div class="collapse navbar-collapse" id="navbarNav">
-      <ul class="navbar-nav ms-auto align-items-center">
-        <li class="nav-item">
-          <a
-            class="nav-link text-white fw-semibold px-3"
-            href="{{ url_for('main.dashboard') }}"
-            >Dashboard</a
-          >
-        </li>
-        <li class="nav-item">
-          <a
-            class="nav-link text-white fw-semibold px-3"
-            href="{{ url_for('main.logout') }}"
-            >Logout</a
-          >
-        </li>
-      </ul>
-    </div>
+<header class="site-nav reveal">
+  <div class="nav-inner">
+    <a class="brand-mark" href="{{ url_for('main.dashboard') }}"><span class="brand-dot"></span>ReviewSense</a>
+    <nav class="nav-links">
+      <a class="nav-link-modern" href="{{ url_for('main.dashboard') }}">Dashboard</a>
+      <a class="nav-link-modern active" href="{{ url_for('main.profile') }}">Profile</a>
+      <a class="nav-link-modern" href="{{ url_for('main.upload_review') }}">Upload</a>
+      <a class="nav-link-modern" href="{{ url_for('main.settings') }}">Settings</a>
+      <a class="nav-link-modern" href="{{ url_for('main.logout') }}">Logout</a>
+    </nav>
   </div>
-</nav>
+</header>
 {% endblock %}
 
 {% block content %}
-<style>
-  body {
-    font-family: "Poppins", sans-serif;
-    background: linear-gradient(rgba(7, 4, 21, 0.7), #070415),
-      url("https://unsplash.com/photos/focus-photography-of-computer-keyboard-with-red-lights-feXpdV001o4")
-        no-repeat center center/cover;
-    color: #c5c1d9;
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-  }
+<div class="app-shell">
+  <section class="app-hero reveal">
+    <div class="app-hero-grid">
+      <div class="app-hero-copy">
+        <div>
+          <p class="kicker" style="color:rgba(218,235,255,0.8);">Profile Intelligence</p>
+          <h1 class="app-hero-title">Manage your account and inspect filtered review intelligence.</h1>
+          <p class="app-hero-text">This page combines account controls, sentiment distribution, advanced filters, export, and deep analysis for each saved review.</p>
+        </div>
+        <div class="hero-stat-row">
+          <article class="hero-stat">
+            <small>Positive Reviews</small>
+            <strong>{{ sentiment_counts.positive }}</strong>
+          </article>
+          <article class="hero-stat">
+            <small>Negative Reviews</small>
+            <strong>{{ sentiment_counts.negative }}</strong>
+          </article>
+          <article class="hero-stat">
+            <small>Neutral Reviews</small>
+            <strong>{{ sentiment_counts.neutral }}</strong>
+          </article>
+        </div>
+      </div>
 
-  /* Sidebar */
-  .sidebar {
-    background: #18132b;
-    position: fixed;
-    top: 56px;
-    bottom: 40px;
-    left: 0;
-    width: 220px;
-    padding-top: 20px;
-    overflow-y: auto;
-  }
-  .sidebar .nav-link {
-    color: #c5c1d9;
-    font-weight: 500;
-    padding: 12px 20px;
-    display: block;
-  }
-  .sidebar .nav-link.active,
-  .sidebar .nav-link:hover {
-    background: #4b0082;
-    color: #fff;
-    border-radius: 8px;
-  }
+      <aside class="hero-side-card">
+        <div>
+          <p class="kicker" style="color:rgba(218,235,255,0.8);">Current Scope</p>
+          <strong>{{ filter_summary.results_count }} reviews match the filters on this page.</strong>
+        </div>
+        <p class="page-subtitle">
+          High urgency in view: <strong>{{ filter_summary.high_urgency_count }}</strong>.
+          Top intent: <strong>{{ filter_summary.top_intent|replace('_', ' ')|title }}</strong>.
+          Average impact: <strong>{{ '%.1f'|format(filter_summary.avg_impact_score) }}</strong>.
+        </p>
+        <div class="callout-strip">
+          <span style="background:rgba(255,255,255,0.12); color:#e7f3ff;">Confidence {{ '%.2f'|format(filter_summary.avg_confidence) }}</span>
+          {% if filter_summary.has_active_filters %}
+          <span style="background:rgba(255,255,255,0.12); color:#e7f3ff;">Filtered view active</span>
+          {% else %}
+          <span style="background:rgba(255,255,255,0.12); color:#e7f3ff;">Full portfolio view</span>
+          {% endif %}
+        </div>
+      </aside>
+    </div>
+  </section>
 
-  .content-area {
-    margin-left: 240px;
-    padding: 2rem;
-  }
-
-  .card-box {
-    background: linear-gradient(
-      145deg,
-      rgba(22, 17, 47, 0.7),
-      rgba(15, 12, 32, 0.8)
-    );
-    border-radius: 20px;
-    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.5);
-    border: 1px solid rgba(138, 43, 226, 0.3);
-    padding: 2rem;
-  }
-
-  .table {
-    background: #18132b;
-    color: #fff;
-  }
-  .table thead {
-    background: #4b0082;
-    color: #fff;
-  }
-
-  /* Analyze Reviews Section */
-  #analyze-reviews .container {
-    width: 100%;
-    max-width: 1400px;
-    margin: 20px auto;
-    background: black;
-    border-radius: 12px;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
-    padding: 30px;
-    color: #222;
-    font-family: "Segoe UI", Arial, sans-serif;
-  }
-  #analyze-reviews .main-content {
-    display: flex;
-    gap: 32px;
-    align-items: flex-start;
-  }
-  #analyze-reviews .left-panel {
-    flex: 2;
-    max-height: 90vh;
-    overflow-y: auto;
-    padding-right: 10px;
-    position: relative;
-  }
-  #analyze-reviews .left-panel .analyzed-title {
-    font-size: 1.8rem;
-    color: #2774f0;
-    font-weight: 600;
-    margin-bottom: 20px;
-    background: black;
-    position: sticky;
-    top: 0;
-    z-index: 10;
-    padding: 10px 5px;
-    border-bottom: 1px solid #ddd;
-  }
-  #analyze-reviews .right-panel {
-    flex: 1;
-    position: sticky;
-    top: 0;
-    align-self: flex-start;
-    height: fit-content;
-  }
-
-  /* Review card */
-  #analyze-reviews .review-card {
-    background: #f5f8fc;
-    border-radius: 8px;
-    margin-bottom: 18px;
-    padding: 18px 20px;
-    box-shadow: 0 2px 10px rgba(39, 116, 240, 0.05);
-  }
-  #analyze-reviews .review-text {
-    font-size: 1.07em;
-    margin-bottom: 10px;
-    color: #333;
-  }
-  #analyze-reviews .review-steps span {
-    display: inline-block;
-    background: #e3e8f8;
-    color: #2774f0;
-    padding: 4px 12px;
-    margin-right: 6px;
-    border-radius: 8px;
-    font-size: 0.98em;
-    font-weight: 500;
-  }
-  #analyze-reviews .review-meta {
-    display: flex;
-    gap: 15px;
-    align-items: center;
-  }
-  #analyze-reviews .badge-sentiment {
-    font-size: 1rem;
-    padding: 0.4em 1em;
-    border-radius: 14px;
-    font-weight: 600;
-  }
-  .badge-positive { background: #22c55e; color: #fff; }
-  .badge-negative { background: #dc3545; color: #fff; }
-  .badge-neutral { background: #facc15; color: #18132b; }
-  .confidence { color: #666; font-size: 0.97em; }
-
-  /* Sentiment chart */
-  #analyze-reviews .sentiment-chart {
-    background: #f8fafc;
-    margin-top: 24px;
-    border-radius: 8px;
-    padding: 15px;
-    text-align: center;
-  }
-  #analyze-reviews .sentiment-chart h4 {
-    color: #2774f0;
-    font-size: 1.08em;
-    margin-bottom: 7px;
-  }
-
-  /* Mobile responsive */
-  @media (max-width: 900px) {
-    #analyze-reviews .main-content { flex-direction: column; }
-    #analyze-reviews .right-panel { margin-top: 18px; }
-  }
-</style>
-
-<div class="sidebar">
-  <nav class="nav flex-column">
-    <a class="nav-link" data-bs-toggle="tab" href="#update-profile">👤 Update Profile</a>
-    <a class="nav-link active" data-bs-toggle="tab" href="#analyze-reviews">📊 Analyze My Reviews</a>
-  </nav>
-</div>
-
-<div class="content-area">
-  <div class="tab-content">
-    <!-- Update Profile Tab -->
-    <div class="tab-pane fade" id="update-profile">
-      <div class="card-box">
-        <h3 class="text-white mb-3">Update Profile</h3>
-        <div class="row justify-content-center">
-          <div class="col-md-8">
-            <img src="https://cdn-icons-png.flaticon.com/512/1946/1946429.png" alt="Profile" class="d-block mx-auto mb-4" style="width: 100px;">
-            <h4 class="text-white text-center mb-4">Welcome, {{ user.username }} 👋</h4>
-            <form method="POST">
-              <div class="row g-3">
-                <div class="col-md-6">
-                  <label class="form-label text-white">Username</label>
-                  <input class="form-control" type="text" name="username" value="{{ user.username }}" required readonly>
-                </div>
-                <div class="col-md-6">
-                  <label class="form-label text-white">Email</label>
-                  <input class="form-control" type="email" name="email" value="{{ user.email }}" required readonly>
-                </div>
-              </div>
-              <button class="btn btn-primary mt-4" type="submit" disabled>Save Changes</button>
-              <button id="editProfileBtn" type="button" class="btn mt-4 ms-2" style="background-color: blue; color: white;">Edit</button>
-            </form>
-            <script>
-              document.addEventListener('DOMContentLoaded', function() {
-                const editBtn = document.getElementById('editProfileBtn');
-                const form = editBtn.closest('form');
-                const inputs = form.querySelectorAll('input');
-                const saveBtn = form.querySelector('button[type="submit"]');
-                editBtn.addEventListener('click', function() {
-                  inputs.forEach(input => input.removeAttribute('readonly'));
-                  saveBtn.removeAttribute('disabled');
-                  editBtn.setAttribute('disabled', 'disabled');
-                });
-              });
-            </script>
+  <section class="content-grid reveal">
+    <section class="surface-card">
+      <p class="kicker">Account Editor</p>
+      <h2 class="page-title" style="font-size:1.3rem;">Profile details</h2>
+      <form method="POST" class="form-grid" id="profileForm" style="margin-top:0.8rem;">
+        {{ csrf_form_input() }}
+        <div class="two-col">
+          <div>
+            <label class="label-gz" for="username">Username</label>
+            <input class="input-gz" type="text" id="username" name="username" value="{{ user.username }}" required>
+          </div>
+          <div>
+            <label class="label-gz" for="email">Email</label>
+            <input class="input-gz" type="email" id="email" name="email" value="{{ user.email }}" required>
           </div>
         </div>
+
+        <details>
+          <summary style="cursor:pointer; font-weight:800; color:#305172;">Password change (optional)</summary>
+          <div class="form-grid" style="margin-top:0.7rem;">
+            <div>
+              <label class="label-gz" for="current_password">Current password</label>
+              <input class="input-gz" type="password" id="current_password" name="current_password">
+            </div>
+            <div class="two-col">
+              <div>
+                <label class="label-gz" for="new_password">New password</label>
+                <input class="input-gz" type="password" id="new_password" name="new_password" minlength="{{ min_password_length }}">
+              </div>
+              <div>
+                <label class="label-gz" for="confirm_password">Confirm password</label>
+                <input class="input-gz" type="password" id="confirm_password" name="confirm_password" minlength="{{ min_password_length }}">
+              </div>
+            </div>
+          </div>
+        </details>
+
+        <button class="btn-gz btn-primary-gz" type="submit">Save Profile</button>
+      </form>
+    </section>
+
+    <section class="surface-card">
+      <p class="kicker">Sentiment Pulse</p>
+      <h2 class="page-title" style="font-size:1.3rem;">Distribution snapshot</h2>
+
+      <div class="metric-grid" style="grid-template-columns:repeat(3,minmax(0,1fr)); margin-top:0.8rem;">
+        <article class="metric-card">
+          <div class="metric-label">Positive</div>
+          <div class="metric-value" style="color:#0b7f42;">{{ sentiment_counts.positive }}</div>
+        </article>
+        <article class="metric-card">
+          <div class="metric-label">Negative</div>
+          <div class="metric-value" style="color:#a7202f;">{{ sentiment_counts.negative }}</div>
+        </article>
+        <article class="metric-card">
+          <div class="metric-label">Neutral</div>
+          <div class="metric-value" style="color:#9a5f04;">{{ sentiment_counts.neutral }}</div>
+        </article>
+      </div>
+
+      <div class="g-card" style="margin-top:0.8rem; border-radius:18px;">
+        <div class="g-card-pad" style="padding:0.8rem;">
+          <canvas id="sentimentChart" height="220"></canvas>
+        </div>
+      </div>
+    </section>
+  </section>
+
+  <section class="surface-card reveal">
+    <div class="page-head">
+      <div>
+        <p class="kicker">Review History</p>
+        <h2 class="page-title" style="font-size:1.3rem;">Filter, inspect, and export analyzed reviews</h2>
+        <p class="page-subtitle">Search across saved feedback, narrow by sentiment or urgency, and export the current result set as CSV.</p>
+      </div>
+      <div class="hero-action-row">
+        <a class="btn-gz btn-success-gz" href="{{ url_for('main.upload_review') }}">Upload New Review</a>
+        <a class="btn-gz btn-secondary-gz" href="{{ url_for('main.export_reviews', q=filters.q, sentiment=filters.sentiment, urgency=filters.urgency, intent=filters.intent) }}">Export CSV</a>
       </div>
     </div>
 
-    <!-- Analyze Reviews Tab -->
-    <div class="tab-pane fade show active" id="analyze-reviews">
-      <div class="container mt-4">
-        <div class="main-content">
-              <!-- Left Panel: Reviews -->
-              <div class="left-panel">
-                <h2 class="analyzed-title">My Analyzed Reviews ({{ reviews|length }})</h2>
+    <form method="GET" class="form-grid">
+      <div class="two-col">
+        <div>
+          <label class="label-gz" for="q">Search review text</label>
+          <input class="input-gz" type="text" id="q" name="q" value="{{ filters.q }}" placeholder="Search by keyword or phrase">
+        </div>
+        <div>
+          <label class="label-gz" for="intent">Intent</label>
+          <select class="input-gz" id="intent" name="intent">
+            <option value="all" {% if filters.intent == 'all' %}selected{% endif %}>All intents</option>
+            {% for item in intent_options %}
+            <option value="{{ item.intent_label }}" {% if filters.intent == item.intent_label %}selected{% endif %}>
+              {{ item.intent_label|replace('_', ' ')|title }} ({{ item.count }})
+            </option>
+            {% endfor %}
+          </select>
+        </div>
+      </div>
+      <div class="two-col">
+        <div>
+          <label class="label-gz" for="sentiment">Sentiment</label>
+          <select class="input-gz" id="sentiment" name="sentiment">
+            <option value="all" {% if filters.sentiment == 'all' %}selected{% endif %}>All sentiments</option>
+            <option value="positive" {% if filters.sentiment == 'positive' %}selected{% endif %}>Positive</option>
+            <option value="negative" {% if filters.sentiment == 'negative' %}selected{% endif %}>Negative</option>
+            <option value="neutral" {% if filters.sentiment == 'neutral' %}selected{% endif %}>Neutral</option>
+          </select>
+        </div>
+        <div>
+          <label class="label-gz" for="urgency">Urgency</label>
+          <select class="input-gz" id="urgency" name="urgency">
+            <option value="all" {% if filters.urgency == 'all' %}selected{% endif %}>All urgency levels</option>
+            <option value="high" {% if filters.urgency == 'high' %}selected{% endif %}>High</option>
+            <option value="medium" {% if filters.urgency == 'medium' %}selected{% endif %}>Medium</option>
+            <option value="low" {% if filters.urgency == 'low' %}selected{% endif %}>Low</option>
+          </select>
+        </div>
+      </div>
+      <div class="hero-action-row">
+        <button class="btn-gz btn-primary-gz" type="submit">Apply Filters</button>
+        <a class="btn-gz btn-secondary-gz" href="{{ url_for('main.profile') }}">Clear Filters</a>
+      </div>
+    </form>
 
-                <!-- Filter dropdown -->
-                <div class="mb-3">
-                  <select id="reviewFilterSelect" class="form-select">
-                    <option value="">All Reviews</option>
-                    <option value="positive">Only Positive Reviews</option>
-                    <option value="negative">Only Negative Reviews</option>
-                    <option value="neutral">Only Neutral Reviews</option>
-                    <option value="newest">Newest First</option>
-                    <option value="oldest">Oldest First</option>
-                  </select>
-                </div>
+    <div class="metric-grid" style="margin-top:1rem;">
+      <article class="metric-card">
+        <div class="metric-label">Results</div>
+        <div class="metric-value">{{ filter_summary.results_count }}</div>
+      </article>
+      <article class="metric-card">
+        <div class="metric-label">High Urgency</div>
+        <div class="metric-value">{{ filter_summary.high_urgency_count }}</div>
+      </article>
+      <article class="metric-card">
+        <div class="metric-label">Avg Impact</div>
+        <div class="metric-value">{{ '%.1f'|format(filter_summary.avg_impact_score) }}</div>
+      </article>
+      <article class="metric-card">
+        <div class="metric-label">Top Intent</div>
+        <div class="metric-value" style="font-size:1.2rem;">{{ filter_summary.top_intent|replace('_', ' ')|title }}</div>
+      </article>
+    </div>
 
-                {% if reviews %}
-                  {% for review in reviews %}
-                  <div class="review-card" data-review-text="{{ review.review_text|lower }}" data-review-sentiment="{{ review.overall_sentiment|lower if review.overall_sentiment else '' }}">
-                    <div class="review-text">"{{ review.review_text }}"</div>
-                    {% if loop.first %}
-                    <div class="review-steps">
-                      <span>Original</span>
-                      <span>Cleaned</span>
-                      <span>Tokenized</span>
-                      <span>Processed</span>
-                    </div>
-                    {% endif %}
-                    <div class="review-meta">
-                      <small class="text-muted">{{ review.uploaded_at.strftime("%b %d, %Y") }}</small>
-                      <button class="btn btn-primary btn-sm ms-2 view-analysis-btn"
-                              data-review-id="{{ review.review_id }}"
-                              data-bs-toggle="modal"
-                              data-bs-target="#analysisModal"
-                              title="View Detailed Analysis">
-                        <i class="fas fa-eye me-1"></i>View Analysis
-                      </button>
-                      <form method="POST" action="{{ url_for('main.delete_review', review_id=review.review_id) }}" style="display: inline;">
-                        <button class="btn btn-danger btn-sm ms-2" type="submit" onclick="return confirm('Are you sure you want to delete this review?');" title="Delete Review">
-                          <i class="fas fa-trash-alt me-1"></i>
-                        </button>
-                      </form>
-                    </div>
-                  </div>
-                  {% endfor %}
-                {% else %}
-                  <div class="text-center py-5">
-                    <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
-                    <h5 class="text-muted">No Reviews Yet</h5>
-                    <p class="text-muted">You haven't uploaded any reviews yet. Start by uploading your first review!</p>
-                    <a href="{{ url_for('main.upload_review') }}" class="btn btn-primary">
-                      <i class="fas fa-plus me-2"></i>Upload Review
-                    </a>
-                  </div>
-                {% endif %}
+    <div class="table-shell" style="margin-top:1rem;">
+      <table class="table-gz">
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Review</th>
+            <th>Sentiment</th>
+            <th>Urgency</th>
+            <th>Intent</th>
+            <th>Impact</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% if reviews %}
+            {% for review in reviews %}
+            <tr>
+              <td>{{ review.uploaded_at.strftime('%Y-%m-%d %H:%M') if review.uploaded_at else '-' }}</td>
+              <td>{{ review.review_text[:150] }}{% if review.review_text|length > 150 %}...{% endif %}</td>
+              <td>
+                <span class="badge-gz {% if review.sentiment_key == 'positive' %}badge-pos{% elif review.sentiment_key == 'negative' %}badge-neg{% else %}badge-neu{% endif %}">
+                  {{ review.overall_sentiment or 'Neutral' }}
+                </span>
+              </td>
+              <td>
+                <span class="badge-gz {% if review.urgency_level == 'high' %}badge-neg{% elif review.urgency_level == 'medium' %}badge-neu{% else %}badge-pos{% endif %}">
+                  {{ review.urgency_level|title }}
+                </span>
+              </td>
+              <td>{{ review.intent_label|replace('_', ' ')|title }}</td>
+              <td>{{ '%.1f'|format(review.impact_score or 0) }}</td>
+              <td>
+                <button class="btn-gz btn-secondary-gz btn-analysis" type="button" data-review-id="{{ review.review_id }}" data-bs-toggle="modal" data-bs-target="#analysisModal">Deep View</button>
+                <form method="POST" action="{{ url_for('main.delete_review', review_id=review.review_id) }}" style="display:inline;">
+                  {{ csrf_form_input() }}
+                  <button class="btn-gz btn-danger-gz" type="submit" onclick="return confirm('Delete this review?');">Delete</button>
+                </form>
+              </td>
+            </tr>
+            {% endfor %}
+          {% else %}
+            <tr><td colspan="7">No reviews match the current filters.</td></tr>
+          {% endif %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="surface-card reveal">
+    <div class="page-head">
+      <div>
+        <p class="kicker">Advanced Analysis</p>
+        <h2 class="page-title" style="font-size:1.3rem;">Recurring themes and aspect shifts{% if filter_summary.has_active_filters %} in the filtered view{% endif %}</h2>
+      </div>
+    </div>
+
+    <div class="layout-grid" style="grid-template-columns:1.05fr 0.95fr;">
+      <section>
+        <p class="kicker">Recurring clusters</p>
+        <div class="form-grid" style="margin-top:0.7rem;">
+          {% if issue_clusters %}
+            {% for cluster in issue_clusters %}
+            <article class="feature-card" style="min-height:auto;">
+              <h3 class="feature-title">Cluster {{ loop.index }} • {{ cluster.size }} reviews</h3>
+              <p class="feature-text">{{ cluster.summary }}</p>
+              <div class="chip-row" style="margin-top:0.45rem;">
+                {% for term in cluster.top_terms %}
+                <span class="chip">{{ term }}</span>
+                {% endfor %}
               </div>
+            </article>
+            {% endfor %}
+          {% else %}
+            <p class="page-subtitle">Not enough reviews for clustering in the current scope.</p>
+          {% endif %}
+        </div>
+      </section>
+      <section>
+        <p class="kicker">Aspect trends</p>
+        <div class="table-shell" style="margin-top:0.7rem;">
+          <table class="table-gz">
+            <thead><tr><th>Aspect</th><th>Trend</th><th>Delta</th></tr></thead>
+            <tbody>
+              {% if aspect_trends %}
+                {% for item in aspect_trends[:8] %}
+                <tr>
+                  <td>{{ item.aspect }}</td>
+                  <td>{{ item.direction }}</td>
+                  <td>{{ item.delta }}</td>
+                </tr>
+                {% endfor %}
+              {% else %}
+                <tr><td colspan="3">Trend signals will appear after more reviews are analyzed.</td></tr>
+              {% endif %}
+            </tbody>
+          </table>
+        </div>
+        <p class="kicker" style="margin-top:0.9rem;">Language mix</p>
+        <div class="chip-row" style="margin-top:0.45rem;">
+          {% if language_breakdown %}
+            {% for language, count in language_breakdown.items() %}
+            <span class="chip">{{ language|upper }} • {{ count }}</span>
+            {% endfor %}
+          {% else %}
+            <span class="chip">No language data yet</span>
+          {% endif %}
+        </div>
+      </section>
+    </div>
+  </section>
+</div>
 
-            <!-- Right Panel: Side Info -->
-<div class="right-panel">
-<div class="card-box text-center" style="background: white; color: black;">
-  <h4 class="text-dark">Sentiment Overview</h4>
-  <p><strong>Total Reviews:</strong> {{ reviews|length }}</p>
-  <div class="d-flex justify-content-around mb-3">
-    <div>
-      <h5 style="color: #22c55e;">{{ sentiment_counts.positive }}</h5>
-      <small style="color: #666;">Positive</small>
-    </div>
-    <div>
-      <h5 style="color: #dc3545;">{{ sentiment_counts.negative }}</h5>
-      <small style="color: #666;">Negative</small>
-    </div>
-    <div>
-      <h5 style="color: #facc15;">{{ sentiment_counts.neutral }}</h5>
-      <small style="color: #666;">Neutral</small>
+<div class="modal fade" id="analysisModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-xl modal-dialog-scrollable">
+    <div class="modal-content" style="border-radius:22px; border:1px solid rgba(17,53,90,0.15);">
+      <div class="modal-header">
+        <h5 class="modal-title">Review deep analysis</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body" id="analysisBody">
+        <p class="page-subtitle">Loading analysis...</p>
+      </div>
     </div>
   </div>
-  <p style="color: #333;">Sentiment Distribution of Your Reviews</p>
-  <canvas id="sentimentChart" width="300" height="300" style="max-width: 100%; height: auto; margin: 0 auto;"></canvas>
 </div>
+{% endblock %}
+
+{% block extra_js %}
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-  {% if reviews %}
-  try {
-    console.log("Sentiment counts:", {
-      positive: {{ sentiment_counts.positive }},
-      negative: {{ sentiment_counts.negative }},
-      neutral: {{ sentiment_counts.neutral }}
-    });
-    const ctx = document.getElementById('sentimentChart').getContext('2d');
-    window.sentimentChart = new Chart(ctx, {
-      type: 'pie',
-      data: {
-        labels: ['Positive', 'Negative', 'Neutral'],
-        datasets: [{
-          data: [{{ sentiment_counts.positive }}, {{ sentiment_counts.negative }}, {{ sentiment_counts.neutral }}],
-          backgroundColor: [
-            '#22c55e',
-            '#dc3545',
-            '#facc15'
-          ],
-          borderWidth: 1
-        }]
-      },
-      options: {
-        responsive: true,
-        plugins: {
-          legend: {
-            position: 'bottom',
-            labels: {
-              color: '#333'
-            }
-          }
-        }
-      }
-    });
-  } catch (error) {
-    console.error('Error initializing sentiment chart:', error);
-  }
-  {% else %}
-  // No reviews - show neutral state
-  try {
-    console.log("No reviews data found, showing empty chart.");
-    const ctx = document.getElementById('sentimentChart').getContext('2d');
-    window.sentimentChart = new Chart(ctx, {
-      type: 'pie',
-      data: {
-        labels: [],
-        datasets: [{
-          data: [],
-          backgroundColor: [],
-          borderWidth: 0
-        }]
-      },
-      options: {
-        responsive: true,
-        plugins: {
-          legend: {
-            display: false
-          }
-        }
-      }
-    });
-  } catch (error) {
-    console.error('Error initializing empty sentiment chart:', error);
-  }
-  {% endif %}
-});
-</script>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
-
-
-
-<!-- Detailed Analysis Modal -->
-<div class="modal fade" id="analysisModal" tabindex="-1" aria-labelledby="analysisModalLabel" aria-hidden="true">
-  <div class="modal-dialog modal-xl">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="analysisModalLabel">Detailed Review Analysis</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body">
-        <div id="analysisContent">
-          <div class="text-center">
-            <div class="spinner-border" role="status">
-              <span class="visually-hidden">Loading...</span>
-            </div>
-            <p class="mt-2">Loading detailed analysis...</p>
-          </div>
-        </div>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-      </div>
-    </div>
-  </div>
-</div>
-
-<script>
-// Handle view analysis button clicks
-document.addEventListener('DOMContentLoaded', function() {
-  const viewButtons = document.querySelectorAll('.view-analysis-btn');
-  const modal = document.getElementById('analysisModal');
-  const analysisContent = document.getElementById('analysisContent');
-
-  viewButtons.forEach(button => {
-    button.addEventListener('click', function() {
-      const reviewId = this.getAttribute('data-review-id');
-      loadAnalysis(reviewId);
-    });
+  new Chart(document.getElementById('sentimentChart'), {
+    type: 'doughnut',
+    data: {
+      labels: ['Positive', 'Negative', 'Neutral'],
+      datasets: [{
+        data: [{{ sentiment_counts.positive }}, {{ sentiment_counts.negative }}, {{ sentiment_counts.neutral }}],
+        backgroundColor: ['#16c16f', '#f14f55', '#ffb020'],
+        borderWidth: 0
+      }]
+    },
+    options: { plugins: { legend: { position: 'bottom' } } }
   });
 
-  function loadAnalysis(reviewId) {
-    // Show loading state
-    analysisContent.innerHTML = `
-      <div class="text-center">
-        <div class="spinner-border" role="status">
-          <span class="visually-hidden">Loading...</span>
-        </div>
-        <p class="mt-2">Loading detailed analysis...</p>
-      </div>
-    `;
+  document.getElementById('profileForm').addEventListener('submit', function (e) {
+    const current = document.getElementById('current_password').value;
+    const next = document.getElementById('new_password').value;
+    const confirm = document.getElementById('confirm_password').value;
+    if ((current || next || confirm) && next !== confirm) {
+      e.preventDefault();
+      alert('New passwords do not match.');
+    }
+  });
 
-    // Fetch analysis data
-    fetch(`/review_analysis/${reviewId}`)
-      .then(response => response.json())
-      .then(data => {
-        if (data.error) {
-          analysisContent.innerHTML = `
-            <div class="alert alert-danger">
-              <h6>Error</h6>
-              <p>${data.error}</p>
-            </div>
-          `;
+  function esc(text) {
+    return String(text)
+      .replaceAll('&', '&amp;')
+      .replaceAll('<', '&lt;')
+      .replaceAll('>', '&gt;')
+      .replaceAll('"', '&quot;')
+      .replaceAll("'", '&#39;');
+  }
+
+  function badge(sent) {
+    const s = (sent || 'neutral').toLowerCase();
+    if (s === 'positive') return 'badge-pos';
+    if (s === 'negative') return 'badge-neg';
+    return 'badge-neu';
+  }
+
+  document.querySelectorAll('.btn-analysis').forEach((btn) => {
+    btn.addEventListener('click', async () => {
+      const reviewId = btn.getAttribute('data-review-id');
+      const body = document.getElementById('analysisBody');
+      body.innerHTML = '<p class="page-subtitle">Loading analysis...</p>';
+
+      try {
+        const res = await fetch(`/review_analysis/${reviewId}`, { credentials: 'include' });
+        const data = await res.json();
+        if (!res.ok || data.error) {
+          body.innerHTML = `<p style="color:var(--danger);">${esc(data.error || 'Unable to load analysis')}</p>`;
           return;
         }
 
-        renderAnalysis(data);
-      })
-      .catch(error => {
-        console.error('Error loading analysis:', error);
-        analysisContent.innerHTML = `
-          <div class="alert alert-danger">
-            <h6>Error Loading Analysis</h6>
-            <p>There was an error loading the detailed analysis. Please try again.</p>
+        const rows = Object.entries(data.aspect_sentiments || {}).map(([aspect, meta]) => `
+          <tr>
+            <td>${esc(aspect)}</td>
+            <td><span class="badge-gz ${badge(meta.sentiment)}">${esc(meta.sentiment || 'Neutral')}</span></td>
+            <td>${Number(meta.confidence || 0).toFixed(2)}</td>
+          </tr>
+        `).join('');
+
+        const advanced = data.advanced_insights || {};
+        const riskFlags = (advanced.risk_flags || []).map((flag) => `<span class="chip">${esc(flag)}</span>`).join('');
+        const actions = (advanced.recommended_actions || []).map((action) => `<li>${esc(action)}</li>`).join('');
+
+        body.innerHTML = `
+          <div class="layout-grid" style="grid-template-columns:1.15fr 0.85fr;">
+            <section class="g-card g-card-pad">
+              <p class="kicker">Highlighted review</p>
+              <div style="line-height:1.6;">${data.highlighted_text || esc(data.original_text || '')}</div>
+            </section>
+            <section class="g-card g-card-pad">
+              <p class="kicker">Summary</p>
+              <p class="page-subtitle">Aspects: ${(data.summary && data.summary.total_aspects) || 0}</p>
+              <p class="page-subtitle">Positive: ${(data.summary && data.summary.positive_count) || 0}</p>
+              <p class="page-subtitle">Negative: ${(data.summary && data.summary.negative_count) || 0}</p>
+              <p class="page-subtitle">Neutral: ${(data.summary && data.summary.neutral_count) || 0}</p>
+              <p class="page-subtitle">Confidence: ${(((data.summary && data.summary.overall_confidence) || 0) * 100).toFixed(1)}%</p>
+            </section>
           </div>
+          <section class="g-card g-card-pad" style="margin-top:0.8rem;">
+            <p class="kicker">Advanced intelligence</p>
+            <div class="feature-grid" style="margin-top:0.6rem;">
+              <article class="feature-card" style="min-height:auto;">
+                <h3 class="feature-title">Intent</h3>
+                <p class="feature-text">${esc((advanced.intent && advanced.intent.label) || 'general_feedback')}</p>
+              </article>
+              <article class="feature-card" style="min-height:auto;">
+                <h3 class="feature-title">Urgency</h3>
+                <p class="feature-text">${esc((advanced.urgency && advanced.urgency.level) || 'low')} • ${Number((advanced.urgency && advanced.urgency.score) || 0).toFixed(2)}</p>
+              </article>
+              <article class="feature-card" style="min-height:auto;">
+                <h3 class="feature-title">Primary emotion</h3>
+                <p class="feature-text">${esc((advanced.emotion_profile && advanced.emotion_profile.primary_emotion) || 'neutral')}</p>
+              </article>
+              <article class="feature-card" style="min-height:auto;">
+                <h3 class="feature-title">Language</h3>
+                <p class="feature-text">${esc((advanced.language && advanced.language.language) || 'unknown')} • ${Number((advanced.language && advanced.language.confidence) || 0).toFixed(2)}</p>
+              </article>
+            </div>
+            <div class="layout-grid" style="grid-template-columns:0.85fr 1.15fr; margin-top:0.8rem;">
+              <section class="feature-card" style="min-height:auto;">
+                <h3 class="feature-title">Experience score</h3>
+                <p class="feature-text" style="font-size:1.5rem; color:var(--ink); font-weight:800;">${Number(advanced.experience_score || 0).toFixed(0)}/100</p>
+                <p class="feature-text">Priority: ${esc(advanced.priority || 'monitor')}</p>
+                <p class="feature-text">Impact: ${Number(advanced.impact_score || 0).toFixed(1)}/100</p>
+              </section>
+              <section class="feature-card" style="min-height:auto;">
+                <h3 class="feature-title">Recommended actions</h3>
+                <ul style="margin:0.45rem 0 0; padding-left:1.1rem; color:var(--ink-soft); line-height:1.6;">${actions || '<li>Monitor similar feedback for stronger patterns.</li>'}</ul>
+              </section>
+            </div>
+            <div style="margin-top:0.8rem;">
+              <h3 class="feature-title">Risk flags</h3>
+              <div class="chip-row" style="margin-top:0.45rem;">${riskFlags || '<span class="chip">No elevated risk flags</span>'}</div>
+            </div>
+          </section>
+          <section class="g-card g-card-pad" style="margin-top:0.8rem;">
+            <p class="kicker">Aspect sentiments</p>
+            <div class="table-shell">
+              <table class="table-gz">
+                <thead><tr><th>Aspect</th><th>Sentiment</th><th>Confidence</th></tr></thead>
+                <tbody>${rows || '<tr><td colspan="3">No aspects detected.</td></tr>'}</tbody>
+              </table>
+            </div>
+          </section>
         `;
-      });
-  }
-
-  function renderAnalysis(data) {
-    const summary = data.summary;
-    const aspectSentiments = data.aspect_sentiments;
-
-    analysisContent.innerHTML = `
-      <style>
-        .analysis-container {
-          display: grid;
-          grid-template-columns: 60% 40%;
-          gap: 1rem;
-          margin-bottom: 1rem;
-        }
-
-        .left-panel {
-          background: #ffffff;
-          border-radius: 8px;
-          padding: 0.75rem;
-          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
-          border: 1px solid #e1e8f0;
-        }
-
-        .right-panel {
-          background: #ffffff;
-          border-radius: 8px;
-          padding: 0.75rem;
-          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
-          border: 1px solid #e1e8f0;
-        }
-
-        .bottom-section {
-          display: grid;
-          grid-template-columns: 1fr 1fr;
-          gap: 1rem;
-          margin-top: 0.5rem;
-        }
-
-        .bottom-card {
-          background: #ffffff;
-          border-radius: 8px;
-          padding: 0.75rem;
-          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
-          border: 1px solid #e1e8f0;
-        }
-
-        .review-title {
-          font-size: 1rem;
-          font-weight: 600;
-          color: #1a202c;
-          margin-bottom: 0.75rem;
-          display: flex;
-          align-items: center;
-          gap: 0.5rem;
-        }
-
-        .review-text {
-          background: #f8fafc;
-          border-radius: 6px;
-          padding: 0.75rem;
-          font-size: 0.85rem;
-          line-height: 1.4;
-          color: #2d3748;
-          border-left: 3px solid #4299e1;
-          margin-bottom: 0.75rem;
-          max-height: 150px;
-          overflow-y: auto;
-        }
-
-        .aspect-highlight {
-          display: inline-block;
-          padding: 0.125rem 0.5rem;
-          border-radius: 20px;
-          font-size: 0.875rem;
-          font-weight: 500;
-          margin: 0.125rem;
-        }
-
-        .aspect-positive {
-          background: rgba(34, 197, 94, 0.15);
-          color: #16a34a;
-          border: 1px solid rgba(34, 197, 94, 0.3);
-        }
-
-        .aspect-negative {
-          background: rgba(239, 68, 68, 0.15);
-          color: #dc2626;
-          border: 1px solid rgba(239, 68, 68, 0.3);
-        }
-
-        .aspect-neutral {
-          background: rgba(245, 158, 11, 0.15);
-          color: #d97706;
-          border: 1px solid rgba(245, 158, 11, 0.3);
-        }
-
-        .analysis-pills {
-          display: flex;
-          gap: 0.5rem;
-          flex-wrap: wrap;
-          margin-bottom: 0.75rem;
-        }
-
-        .pill-btn {
-          background: #f1f5f9;
-          border: 1px solid #cbd5e1;
-          color: #475569;
-          padding: 0.375rem 0.75rem;
-          border-radius: 16px;
-          font-size: 0.8rem;
-          font-weight: 500;
-          cursor: pointer;
-          transition: all 0.2s ease;
-        }
-
-        .pill-btn:hover {
-          background: #e2e8f0;
-          border-color: #94a3b8;
-        }
-
-        .pill-btn.active {
-          background: #4299e1;
-          border-color: #4299e1;
-          color: white;
-        }
-
-        .aspect-list {
-          display: flex;
-          flex-direction: column;
-          gap: 0.4rem;
-          max-height: 150px;
-          overflow-y: auto;
-        }
-
-        .aspect-item {
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          padding: 0.5rem 0.75rem;
-          background: #f8fafc;
-          border-radius: 6px;
-          border: 1px solid #e2e8f0;
-        }
-
-        .aspect-name {
-          font-weight: 500;
-          color: #1a202c;
-          font-size: 0.875rem;
-        }
-
-        .sentiment-badge {
-          padding: 0.2rem 0.6rem;
-          border-radius: 10px;
-          font-size: 0.7rem;
-          font-weight: 600;
-          text-transform: uppercase;
-          letter-spacing: 0.05em;
-        }
-
-        .badge-positive {
-          background: rgba(34, 197, 94, 0.15);
-          color: #16a34a;
-          border: 1px solid rgba(34, 197, 94, 0.3);
-        }
-
-        .badge-negative {
-          background: rgba(239, 68, 68, 0.15);
-          color: #dc2626;
-          border: 1px solid rgba(239, 68, 68, 0.3);
-        }
-
-        .badge-neutral {
-          background: rgba(245, 158, 11, 0.15);
-          color: #d97706;
-          border: 1px solid rgba(245, 158, 11, 0.3);
-        }
-
-        .summary-stats {
-          display: grid;
-          grid-template-columns: repeat(2, 1fr);
-          gap: 0.75rem;
-          margin-bottom: 1rem;
-        }
-
-        .stat-card {
-          background: #f8fafc;
-          border-radius: 8px;
-          padding: 0.75rem;
-          text-align: center;
-          border: 1px solid #e2e8f0;
-        }
-
-        .stat-number {
-          font-size: 1.5rem;
-          font-weight: 700;
-          color: #1a202c;
-          margin-bottom: 0.25rem;
-        }
-
-        .stat-label {
-          font-size: 0.8rem;
-          color: #64748b;
-          font-weight: 500;
-        }
-
-        .confidence-meter {
-          background: #f1f5f9;
-          border-radius: 6px;
-          padding: 0.5rem;
-          margin-top: 0.75rem;
-          border: 1px solid #cbd5e1;
-        }
-
-        .confidence-bar {
-          background: #4299e1;
-          height: 6px;
-          border-radius: 3px;
-          margin-top: 0.25rem;
-          transition: width 0.3s ease;
-        }
-
-        @media (max-width: 768px) {
-          .analysis-container {
-            grid-template-columns: 1fr;
-          }
-
-          .bottom-section {
-            grid-template-columns: 1fr;
-          }
-        }
-      </style>
-
-      <div class="analysis-container">
-        <!-- Left Panel: Review with Aspect Extraction -->
-        <div class="left-panel">
-          <div class="review-title">
-            <i class="fas fa-quote-left" style="color: #4299e1;"></i>
-            Review with Aspect Extraction
-          </div>
-          <div class="review-text">
-            ${data.highlighted_text}
-          </div>
-          <div class="analysis-pills">
-            <button class="pill-btn active" onclick="switchAnalysisMethod('rule-based', this)">
-              <i class="fas fa-cogs me-1"></i>Rule-based Extraction
-            </button>
-            <button class="pill-btn" onclick="switchAnalysisMethod('dependency', this)">
-              <i class="fas fa-project-diagram me-1"></i>Dependency Parsing
-            </button>
-            <button class="pill-btn" onclick="switchAnalysisMethod('contextual', this)">
-              <i class="fas fa-brain me-1"></i>Contextual Analysis
-            </button>
-          </div>
-        </div>
-
-        <!-- Right Panel: Aspect Sentiment Breakdown -->
-        <div class="right-panel">
-          <div class="review-title">
-            <i class="fas fa-list-ul" style="color: #10b981;"></i>
-            Aspect Sentiment Breakdown
-          </div>
-          <div class="aspect-list">
-            ${aspectSentiments && Object.keys(aspectSentiments).length > 0 ?
-              Object.entries(aspectSentiments).map(([aspect, info]) => `
-                <div class="aspect-item">
-                  <span class="aspect-name">${aspect}</span>
-                  <span class="sentiment-badge ${getSentimentBadgeClass(info.sentiment)}">
-                    ${info.sentiment}
-                  </span>
-                </div>
-              `).join('') :
-              '<div class="aspect-item"><span class="text-muted">No aspects identified</span></div>'
-            }
-          </div>
-        </div>
-      </div>
-
-      <!-- Bottom Section -->
-      <div class="bottom-section">
-        <!-- Bottom Left: Aspect Sentiment Scores -->
-        <div class="bottom-card">
-          <div class="review-title">
-            <i class="fas fa-chart-bar" style="color: #f59e0b;"></i>
-            Aspect Sentiment Scores
-          </div>
-          <canvas id="aspectChart" width="300" height="150"></canvas>
-        </div>
-
-        <!-- Bottom Right: Analysis Summary -->
-        <div class="bottom-card">
-          <div class="review-title">
-            <i class="fas fa-analytics" style="color: #8b5cf6;"></i>
-            Analysis Summary
-          </div>
-
-          <div class="summary-stats">
-            <div class="stat-card">
-              <div class="stat-number" style="color: #4299e1;">${summary.total_aspects || 0}</div>
-              <div class="stat-label">Total Aspects</div>
-            </div>
-            <div class="stat-card">
-              <div class="stat-number" style="color: #10b981;">${summary.positive_count || 0}</div>
-              <div class="stat-label">Positive</div>
-            </div>
-            <div class="stat-card">
-              <div class="stat-number" style="color: #ef4444;">${summary.negative_count || 0}</div>
-              <div class="stat-label">Negative</div>
-            </div>
-            <div class="stat-card">
-              <div class="stat-number" style="color: #f59e0b;">${summary.neutral_count || 0}</div>
-              <div class="stat-label">Neutral</div>
-            </div>
-          </div>
-
-          <div class="confidence-meter">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
-              <span style="font-weight: 500; color: #475569;">Overall Confidence</span>
-              <span style="font-weight: 600; color: #1a202c;">${(summary.overall_confidence * 100).toFixed(1)}%</span>
-            </div>
-            <div class="confidence-bar" style="width: ${(summary.overall_confidence * 100)}%"></div>
-          </div>
-        </div>
-      </div>
-    `;
-
-    // Render aspect sentiment scores chart
-    if (aspectSentiments && Object.keys(aspectSentiments).length > 0) {
-      const canvas = document.getElementById('aspectChart');
-
-      // Check if canvas exists
-      if (!canvas) {
-        console.error('Canvas element not found');
-        return;
+      } catch (err) {
+        body.innerHTML = '<p style="color:var(--danger);">Unable to load analysis.</p>';
       }
-
-      const ctx = canvas.getContext('2d');
-
-      // Clear canvas before drawing
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-      // Destroy existing chart if it exists
-      if (window.aspectChart && typeof window.aspectChart.destroy === 'function') {
-        window.aspectChart.destroy();
-        window.aspectChart = null;
-      }
-
-      const aspects = Object.keys(aspectSentiments);
-      const scores = aspects.map(aspect => aspectSentiments[aspect].confidence * 100);
-
-      // Create new chart with fixed dimensions
-      window.aspectChart = new Chart(ctx, {
-        type: 'bar',
-        data: {
-          labels: aspects,
-          datasets: [{
-            label: 'Sentiment Confidence (%)',
-            data: scores,
-            backgroundColor: aspects.map(aspect => {
-              const sentiment = aspectSentiments[aspect].sentiment.toLowerCase();
-              switch(sentiment) {
-                case 'positive': return '#10b981';
-                case 'negative': return '#ef4444';
-                case 'neutral': return '#f59e0b';
-                default: return '#6b7280';
-              }
-            }),
-            borderRadius: 6,
-            borderSkipped: false,
-          }]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: {
-            legend: {
-              display: false
-            }
-          },
-          scales: {
-            y: {
-              beginAtZero: true,
-              max: 100,
-              grid: {
-                color: '#f1f5f9'
-              },
-              ticks: {
-                callback: function(value) {
-                  return value + '%';
-                }
-              }
-            },
-            x: {
-              grid: {
-                display: false
-              }
-            }
-          },
-          layout: {
-            padding: {
-              top: 10,
-              bottom: 10,
-              left: 10,
-              right: 10
-            }
-          },
-          // Force fixed height to prevent growing
-          animation: {
-            duration: 0
-          }
-        }
-      });
-
-      // Force canvas to fixed size
-      canvas.style.height = '150px';
-      canvas.style.maxHeight = '150px';
-      canvas.height = 150;
-    }
-
-    // Add click handlers for analysis method switching
-    window.switchAnalysisMethod = function(method, button) {
-      // Remove active class from all buttons
-      document.querySelectorAll('.pill-btn').forEach(btn => btn.classList.remove('active'));
-      // Add active class to clicked button
-      button.classList.add('active');
-
-      // Here you could implement different analysis methods
-      console.log('Switched to:', method);
-    };
-  }
-
-  function getSentimentBadgeClass(sentiment) {
-    switch(sentiment.toLowerCase()) {
-      case 'positive': return 'bg-success';
-      case 'negative': return 'bg-danger';
-      case 'neutral': return 'bg-warning';
-      default: return 'bg-secondary';
-    }
-  }
-});
+    });
+  });
 </script>
-
 {% endblock %}

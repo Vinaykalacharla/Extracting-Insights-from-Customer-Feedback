@@ -1,500 +1,690 @@
-{% extends "base.html" %}
-{% block title %}Admin Dashboard | ReviewSense {%endblock %} 
+﻿{% extends "base.html" %}
+{% block title %}Admin Console | ReviewSense{% endblock %}
+
 {% block navbar %}
-<nav
-  class="navbar navbar-expand-lg navbar-dark shadow-sm"
-  style="
-    background: linear-gradient(90deg, #18132b 80%, #4b0082 100%);
-    font-family: 'Poppins', sans-serif;
-  "
->
-  <div class="container-fluid">
-    <a
-      class="navbar-brand fw-bold text-white"
-      href="#"
-      style="font-size: 1.7rem; letter-spacing: 1px"
-    >
-      Admin Dashboard
-    </a>
-    <button
-      class="navbar-toggler"
-      type="button"
-      data-bs-toggle="collapse"
-      data-bs-target="#navbarNav"
-      aria-controls="navbarNav"
-      aria-expanded="false"
-      aria-label="Toggle navigation"
-    >
-      <span class="navbar-toggler-icon"></span>
-    </button>
-    <div class="collapse navbar-collapse" id="navbarNav">
-      <ul class="navbar-nav ms-auto align-items-center">
-        <li class="nav-item">
-          <a
-            class="nav-link text-white fw-semibold px-3"
-            href="{{ url_for('main.logout') }}"
-            >Logout</a
-          >
-        </li>
-      </ul>
-    </div>
+<header class="site-nav reveal">
+  <div class="nav-inner">
+    <a class="brand-mark" href="{{ url_for('main.admin_dashboard') }}"><span class="brand-dot"></span>ReviewSense Admin</a>
+    <nav class="nav-links">
+      <a class="nav-link-modern" href="{{ url_for('main.logout') }}">Logout</a>
+    </nav>
   </div>
-</nav>
-{% endblock %} 
+</header>
+{% endblock %}
 
 {% block content %}
-<style>
-  body {
-    font-family: "Poppins", sans-serif;
-    background: linear-gradient(rgba(7, 4, 21, 0.7), #070415),
-      url("https://unsplash.com/photos/focus-photography-of-computer-keyboard-with-red-lights-feXpdV001o4")
-        no-repeat center center/cover;
-    color: #c5c1d9;
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-  }
-
-  /* Sidebar */
-  .sidebar {
-    background: #18132b;
-    position: fixed;
-    top: 56px;
-    bottom: 40px;
-    left: 0;
-    width: 220px;
-    padding-top: 20px;
-    overflow-y: auto;
-  }
-  .sidebar .nav-link {
-    color: #c5c1d9;
-    font-weight: 500;
-    padding: 12px 20px;
-    display: block;
-  }
-  .sidebar .nav-link.active,
-  .sidebar .nav-link:hover {
-    background: #4b0082;
-    color: #fff;
-    border-radius: 8px;
-  }
-
-  .content-area {
-    margin-left: 240px;
-    padding: 2rem;
-  }
-
-  .card-box {
-    background: linear-gradient(
-      145deg,
-      rgba(22, 17, 47, 0.7),
-      rgba(15, 12, 32, 0.8)
-    );
-    border-radius: 20px;
-    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.5);
-    border: 1px solid rgba(138, 43, 226, 0.3);
-    padding: 2rem;
-  }
-
-  .table {
-    background: #18132b;
-    color: #fff;
-  }
-  .table thead {
-    background: #4b0082;
-    color: #fff;
-  }
-
-  /* Analyze Reviews Section */
-  #analyze-reviews .container {
-    width: 100%;
-    max-width: 1400px;
-    margin: 20px auto;
-    background: black;
-    border-radius: 12px;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
-    padding: 30px;
-    color: #222;
-    font-family: "Segoe UI", Arial, sans-serif;
-  }
-  #analyze-reviews .main-content {
-    display: flex;
-    gap: 32px;
-    align-items: flex-start;
-  }
-  #analyze-reviews .left-panel {
-    flex: 2;
-    max-height: 90vh;
-    overflow-y: auto;
-    padding-right: 10px;
-    position: relative;
-  }
-  #analyze-reviews .left-panel .analyzed-title {
-    font-size: 1.8rem;
-    color: #2774f0;
-    font-weight: 600;
-    margin-bottom: 20px;
-    background: black;
-    position: sticky;
-    top: 0;
-    z-index: 10;
-    padding: 10px 5px;
-    border-bottom: 1px solid #ddd;
-  }
-  #analyze-reviews .right-panel {
-    flex: 1;
-    position: sticky;
-    top: 0;
-    align-self: flex-start;
-    height: fit-content;
-  }
-
-  /* Review card */
-  #analyze-reviews .review-card {
-    background: #f5f8fc;
-    border-radius: 8px;
-    margin-bottom: 18px;
-    padding: 18px 20px;
-    box-shadow: 0 2px 10px rgba(39, 116, 240, 0.05);
-  }
-  #analyze-reviews .review-text {
-    font-size: 1.07em;
-    margin-bottom: 10px;
-    color: #333;
-  }
-  #analyze-reviews .review-steps span {
-    display: inline-block;
-    background: #e3e8f8;
-    color: #2774f0;
-    padding: 4px 12px;
-    margin-right: 6px;
-    border-radius: 8px;
-    font-size: 0.98em;
-    font-weight: 500;
-  }
-  #analyze-reviews .review-meta {
-    display: flex;
-    gap: 15px;
-    align-items: center;
-  }
-  #analyze-reviews .badge-sentiment {
-    font-size: 1rem;
-    padding: 0.4em 1em;
-    border-radius: 14px;
-    font-weight: 600;
-  }
-  .badge-positive { background: #22c55e; color: #fff; }
-  .badge-negative { background: #dc3545; color: #fff; }
-  .badge-neutral { background: #facc15; color: #18132b; }
-  .confidence { color: #666; font-size: 0.97em; }
-
-  /* Sentiment chart */
-  #analyze-reviews .sentiment-chart {
-    background: #f8fafc;
-    margin-top: 24px;
-    border-radius: 8px;
-    padding: 15px;
-    text-align: center;
-  }
-  #analyze-reviews .sentiment-chart h4 {
-    color: #2774f0;
-    font-size: 1.08em;
-    margin-bottom: 7px;
-  }
-  #analyze-reviews .chart-placeholder {
-    width: 120px;
-    height: 120px;
-    margin: 0 auto;
-    border-radius: 50%;
-    background: conic-gradient(
-      #36c54d 0 65deg,
-      #ed6755 65deg 120deg,
-      #e2e6ea 120deg 360deg
-    );
-    box-shadow: 0 2px 10px rgba(39, 116, 240, 0.05);
-  }
-
-  /* Sidebar info boxes */
-  #analyze-reviews .sidebar-section {
-    background: #eef4fe;
-    border-radius: 10px;
-    padding: 16px;
-    margin-bottom: 8px;
-    box-shadow: 0 2px 10px rgba(39, 116, 240, 0.04);
-  }
-  #analyze-reviews .sidebar-section h4 {
-    color: #2774f0;
-    font-size: 1.02em;
-    margin-bottom: 7px;
-    font-weight: 600;
-  }
-  #analyze-reviews .sidebar-section ul {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-  }
-  #analyze-reviews .sidebar-section ul li {
-    font-size: 0.98em;
-    margin-bottom: 7px;
-    color: #222;
-  }
-
-  /* Mobile responsive */
-  @media (max-width: 900px) {
-    #analyze-reviews .main-content { flex-direction: column; }
-    #analyze-reviews .right-panel { margin-top: 18px; }
-  }
-</style>
-
-<div class="sidebar">
-  <nav class="nav flex-column">
-    <a class="nav-link" data-bs-toggle="tab" href="#user-details">👤 User Details</a>
-    <a class="nav-link" data-bs-toggle="tab" href="#analyze-reviews">📊 Analyze Reviews</a>
-  </nav>
-</div>
-
-<div class="content-area">
-  <div class="tab-content">
-    <!-- Default Blank -->
-    <div class="tab-pane fade show active" id="blank">
-      <h4 class="text-muted">Please select a menu item from the left.</h4>
-    </div>
-
-    <!-- User Details -->
-    <div class="tab-pane fade" id="user-details">
-      <div class="card-box">
-        <h3 class="text-white mb-3">User Details</h3>
-        <div class="table-responsive">
-          <table class="table table-bordered table-hover align-middle">
-            <thead>
-              <tr>
-                <th>User ID</th>
-                <th>Username</th>
-                <th>Email</th>
-                <th>Reviews</th>
-              </tr>
-            </thead>
-            <tbody>
-              {% for user in users %}
-              <tr>
-                <td>{{ user.user_id }}</td>
-                <td>{{ user.username }}</td>
-                <td>{{ user.email }}</td>
-                <td>
-                  {% if user.reviews %}
-                  <ul class="list-group list-group-flush">
-                    {% for review in user.reviews %}
-                    <li class="list-group-item">
-                      <span class="fw-bold">{{ review.uploaded_at }}</span>: {{ review.highlighted_text | safe }}
-                    </li>
-                    {% endfor %}
-                  </ul>
-                  {% else %}
-                  <span class="text-muted">No reviews</span>
-                  {% endif %}
-                </td>
-              </tr>
-              {% endfor %}
-            </tbody>
-          </table>
-        </div>
+<div class="app-shell">
+<section class="app-hero reveal">
+  <div class="app-hero-grid">
+    <div class="app-hero-copy">
+      <div>
+        <p class="kicker" style="color:rgba(218,235,255,0.8);">Admin Command Center</p>
+        <h1 class="app-hero-title">Operate users, analytics, alerts, and exports from one system view.</h1>
+        <p class="app-hero-text">This admin layer is designed for cross-team feedback intelligence, background jobs, alert monitoring, and executive reporting.</p>
+      </div>
+      <div class="hero-action-row">
+        <button id="btnReanalyze" class="btn-gz btn-primary-gz" type="button">Queue Re-Analysis</button>
+        <button id="btnAlertScan" class="btn-gz btn-warning-gz" type="button">Run Alert Scan</button>
+        <button id="btnExport" class="btn-gz btn-secondary-gz" type="button">Export Data</button>
+      </div>
+      <div class="hero-stat-row">
+        <article class="hero-stat">
+          <small>Focus Area</small>
+          <strong>Feedback operations and analytics health</strong>
+        </article>
+        <article class="hero-stat">
+          <small>Controls</small>
+          <strong>Users, jobs, alerts, and trend reporting</strong>
+        </article>
+        <article class="hero-stat">
+          <small>Primary Surface</small>
+          <strong>Tabbed admin workspace</strong>
+        </article>
       </div>
     </div>
 
-    <!-- Analyze Reviews -->
-    <div class="tab-pane fade" id="analyze-reviews">
-      <div class="container mt-4">
-        <!-- Sentiment Overview at Top -->
-        <div class="sentiment-overview-top mb-4" style="background: white; color: black; padding: 1rem; border-radius: 20px; box-shadow: 0 15px 40px rgba(0, 0, 0, 0.1); max-width: 100%;">
-          <div class="row align-items-center">
-            <div class="col-md-6 text-center">
-              <h4 class="text-dark mb-3">Overall Sentiment Distribution</h4>
-              <p><strong>Total Reviews:</strong> {{ reviews|length }}</p>
-              <div class="d-flex justify-content-around mb-3">
-                <div>
-                  <h5 style="color: #22c55e;">{{ sentiment_counts.positive }}</h5>
-                  <small style="color: #666;">Positive</small>
-                </div>
-                <div>
-                  <h5 style="color: #dc3545;">{{ sentiment_counts.negative }}</h5>
-                  <small style="color: #666;">Negative</small>
-                </div>
-                <div>
-                  <h5 style="color: #facc15;">{{ sentiment_counts.neutral }}</h5>
-                  <small style="color: #666;">Neutral</small>
-                </div>
-              </div>
-              <p style="color: #333;">Sentiment Distribution of All Reviews</p>
-            </div>
-            <div class="col-md-6 d-flex justify-content-end">
-              <canvas id="adminSentimentChart" width="210" height="210" style="max-width: 100%; height: auto;"></canvas>
-            </div>
-          </div>
-        </div>
+    <aside class="hero-side-card">
+      <div>
+        <p class="kicker" style="color:rgba(218,235,255,0.8);">Admin Workflow</p>
+        <strong>Switch between dashboard, analytics, users, and settings from the same command layer.</strong>
+      </div>
+      <p class="page-subtitle">Use filters, queue jobs, inspect alerts, and review system output without leaving the page.</p>
+    </aside>
+  </div>
+</section>
 
-        <div class="main-content">
-          <!-- Left Panel: Reviews -->
-          <div class="left-panel">
-            <h2 class="analyzed-title">Analyzed Reviews ({{ reviews|length }})</h2>
+<div class="segment-nav reveal" id="adminTabs" role="tablist">
+  <button class="segment-btn active" type="button" data-tab="dashboard">Dashboard</button>
+  <button class="segment-btn" type="button" data-tab="analytics">Analytics</button>
+  <button class="segment-btn" type="button" data-tab="users">Users</button>
+  <button class="segment-btn" type="button" data-tab="settings">Settings</button>
+</div>
 
-            {% if reviews %}
-              {% for review in reviews %}
-              <div class="review-card">
-                <div class="review-text">"{{ review.highlighted_text | safe }}"</div>
-                {% if loop.first %}
-                <div class="review-steps">
-                  <span>Original</span>
-                  <span>Cleaned</span>
-                  <span>Tokenized</span>
-                  <span>Processed</span>
-                </div>
-                {% endif %}
-                <div class="review-meta">
-                  {% if review.overall_sentiment and review.overall_sentiment.lower() == "positive" %}
-                  <span class="badge-sentiment badge-positive">Positive</span>
-                  {% elif review.overall_sentiment and review.overall_sentiment.lower() == "negative" %}
-                  <span class="badge-sentiment badge-negative">Negative</span>
-                  {% else %}
-                  <span class="badge-sentiment badge-neutral">{{ review.overall_sentiment or "Neutral" }}</span>
-                  {% endif %}
-                  <span class="confidence">
-                    Confidence: {{ (review.overall_sentiment_score * 100) | round(1) if review.overall_sentiment_score else 'N/A' }}%
-                  </span>
-                </div>
-              </div>
-              {% endfor %}
-            {% else %}
-              <p class="text-muted">No reviews available.</p>
-            {% endif %}
-          </div>
+<section id="tab-dashboard" class="admin-tab reveal" style="margin-top:1rem;">
+  <div class="metric-grid">
+    <article class="metric-card">
+      <div class="metric-label">Total Reviews</div>
+      <div class="metric-value" id="statReviews">0</div>
+    </article>
+    <article class="metric-card">
+      <div class="metric-label">Aspect Categories</div>
+      <div class="metric-value" id="statAspects">0</div>
+    </article>
+    <article class="metric-card">
+      <div class="metric-label">Estimated Accuracy</div>
+      <div class="metric-value" id="statAccuracy">0%</div>
+    </article>
+    <article class="metric-card">
+      <div class="metric-label">High Urgency</div>
+      <div class="metric-value" id="statUrgent">0</div>
+    </article>
+    <article class="metric-card">
+      <div class="metric-label">Avg Experience</div>
+      <div class="metric-value" id="statExperience">0</div>
+    </article>
+    <article class="metric-card">
+      <div class="metric-label">Avg Impact</div>
+      <div class="metric-value" id="statImpact">0</div>
+    </article>
+  </div>
 
-          <!-- Right Panel: Side Info -->
-          <div class="right-panel">
-            <div class="sidebar-section">
-              <h4>Text Preprocessing</h4>
-              <ul>
-                <li><b>Text Cleaning:</b> Special chars, emojis</li>
-                <li><b>Tokenization:</b> Word segmentation</li>
-                <li><b>Normalization:</b> Lowercasing</li>
-                <li><b>Stop Words:</b> Removal using NLTK</li>
-              </ul>
-            </div>
-            <div class="sidebar-section">
-              <h4>Sentiment Analysis</h4>
-              <ul>
-                <li><b>Hugging Face</b> Transformers</li>
-                <li><b>Classification:</b> Pos/Neg/Neutral</li>
-                <li><b>Confidence:</b> Scoring</li>
-                <li><b>Real-time:</b> Processing</li>
-              </ul>
-            </div>
-            <div class="sidebar-section last">
-              <h4>Expected Outcome</h4>
-              <ul>
-                <li>Functional preprocessing pipeline</li>
-                <li>Accurate sentiment classification</li>
-                <li>Visual sentiment distribution</li>
-                <li>Working review list interface</li>
-              </ul>
-            </div>
-          </div>
-        </div>
+  <div class="g-card g-card-pad" style="margin-top:0.9rem;">
+    <div class="two-col" style="grid-template-columns:repeat(3,minmax(0,1fr));">
+      <div>
+        <label class="label-gz" for="filterCategory">Category</label>
+        <select id="filterCategory" class="input-gz">
+          <option value="all">All categories</option>
+        </select>
+      </div>
+      <div>
+        <label class="label-gz" for="filterTime">Time Range</label>
+        <select id="filterTime" class="input-gz">
+          <option value="7">Last 7 days</option>
+          <option value="30" selected>Last 30 days</option>
+          <option value="90">Last 90 days</option>
+        </select>
+      </div>
+      <div>
+        <label class="label-gz" for="filterSentiment">Sentiment</label>
+        <select id="filterSentiment" class="input-gz">
+          <option value="all">All</option>
+          <option value="positive">Positive</option>
+          <option value="negative">Negative</option>
+          <option value="neutral">Neutral</option>
+        </select>
       </div>
     </div>
   </div>
-</div>
 
-{% endblock %} 
+  <div class="g-card g-card-pad" style="margin-top:0.9rem;">
+    <p class="kicker">Timeline</p>
+    <h2 class="page-title" style="font-size:1.2rem;">Sentiment trend stream</h2>
+    <canvas id="trendChart" height="120"></canvas>
+  </div>
+
+  <div class="layout-grid" style="margin-top:0.9rem;">
+    <section class="g-card g-card-pad">
+      <p class="kicker">Top positive</p>
+      <h3 class="page-title" style="font-size:1.1rem;">Most praised aspects</h3>
+      <canvas id="positiveAspectChart" height="200"></canvas>
+    </section>
+    <section class="g-card g-card-pad">
+      <p class="kicker">Top negative</p>
+      <h3 class="page-title" style="font-size:1.1rem;">Most criticized aspects</h3>
+      <canvas id="negativeAspectChart" height="200"></canvas>
+    </section>
+  </div>
+
+  <div class="layout-grid" style="margin-top:0.9rem;">
+    <section class="g-card g-card-pad">
+      <p class="kicker">Recurring issues</p>
+      <h3 class="page-title" style="font-size:1.1rem;">Clustered review themes</h3>
+      <div id="issueClusters" class="form-grid" style="margin-top:0.7rem;"></div>
+    </section>
+    <section class="g-card g-card-pad">
+      <p class="kicker">Emerging movement</p>
+      <h3 class="page-title" style="font-size:1.1rem;">Aspect trend watchlist</h3>
+      <div class="table-shell" style="margin-top:0.7rem;">
+        <table class="table-gz">
+          <thead><tr><th>Aspect</th><th>Trend</th><th>Delta</th></tr></thead>
+          <tbody id="aspectTrendRows"><tr><td colspan="3">Loading...</td></tr></tbody>
+        </table>
+      </div>
+    </section>
+  </div>
+
+  <section class="g-card g-card-pad" style="margin-top:0.9rem;">
+    <p class="kicker">Active alerts</p>
+    <h3 class="page-title" style="font-size:1.1rem;">High-impact and urgent signals</h3>
+    <div id="alertCards" class="form-grid" style="margin-top:0.7rem;"></div>
+  </section>
+</section>
+
+<section id="tab-analytics" class="admin-tab" style="display:none; margin-top:1rem;">
+  <div class="layout-grid" style="grid-template-columns:1.3fr 0.9fr;">
+    <section class="g-card g-card-pad">
+      <div class="page-head" style="margin-bottom:0.4rem;">
+        <div>
+          <p class="kicker">Live feed</p>
+          <h2 class="page-title" style="font-size:1.2rem;">Recent reviews</h2>
+          <p class="page-subtitle" id="reviewCountText">0 reviews</p>
+        </div>
+      </div>
+      <div id="reviewList" class="form-grid"></div>
+    </section>
+
+    <section class="g-card g-card-pad">
+      <p class="kicker">Distribution</p>
+      <h2 class="page-title" style="font-size:1.2rem;">Sentiment split</h2>
+      <canvas id="pieChart" height="220"></canvas>
+      <div class="metric-grid" style="grid-template-columns:1fr; margin-top:0.8rem;">
+        <article class="metric-card"><div class="metric-label">Total reviews</div><div class="metric-value" id="totalReviews">0</div></article>
+        <article class="metric-card"><div class="metric-label">Positive</div><div class="metric-value" id="positivePercent">0%</div></article>
+        <article class="metric-card"><div class="metric-label">Negative</div><div class="metric-value" id="negativePercent">0%</div></article>
+        <article class="metric-card"><div class="metric-label">Neutral</div><div class="metric-value" id="neutralPercent">0%</div></article>
+      </div>
+    </section>
+  </div>
+</section>
+
+<section id="tab-users" class="admin-tab" style="display:none; margin-top:1rem;">
+  <section class="g-card g-card-pad">
+    <p class="kicker">User operations</p>
+    <h2 class="page-title" style="font-size:1.2rem;">Manage user accounts</h2>
+    <p class="page-subtitle">Review account footprint and remove invalid users.</p>
+    <div id="usersGrid" class="feature-grid" style="margin-top:0.8rem;"></div>
+  </section>
+</section>
+
+<section id="tab-settings" class="admin-tab" style="display:none; margin-top:1rem;">
+  <section class="g-card g-card-pad" style="max-width:760px;">
+    <p class="kicker">Admin security</p>
+    <h2 class="page-title" style="font-size:1.2rem;">Rotate admin password</h2>
+    <div id="passwordMessage" style="margin-top:0.7rem;"></div>
+
+    <form id="adminPasswordForm" class="form-grid" style="margin-top:0.9rem;">
+      {{ csrf_form_input() }}
+      <div>
+        <label class="label-gz" for="current_password">Current password</label>
+        <input class="input-gz" type="password" id="current_password" name="current_password" required>
+      </div>
+      <div class="two-col">
+        <div>
+          <label class="label-gz" for="new_password">New password</label>
+          <input class="input-gz" type="password" id="new_password" name="new_password" required minlength="{{ min_password_length }}">
+        </div>
+        <div>
+          <label class="label-gz" for="confirm_password">Confirm password</label>
+          <input class="input-gz" type="password" id="confirm_password" name="confirm_password" required minlength="{{ min_password_length }}">
+        </div>
+      </div>
+      <button class="btn-gz btn-primary-gz" type="submit">Update Admin Password</button>
+    </form>
+  </section>
+
+  <section class="g-card g-card-pad" style="margin-top:1rem; max-width:760px;">
+    <p class="kicker">Background jobs</p>
+    <h2 class="page-title" style="font-size:1.2rem;">Analysis queue</h2>
+    <div class="table-shell" style="margin-top:0.8rem;">
+      <table class="table-gz">
+        <thead><tr><th>Job</th><th>Status</th><th>Requested By</th><th>Created</th></tr></thead>
+        <tbody id="jobRows"><tr><td colspan="4">No jobs loaded.</td></tr></tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="g-card g-card-pad" style="margin-top:1rem; max-width:760px;">
+    <p class="kicker">Alert history</p>
+    <div class="table-shell" style="margin-top:0.8rem;">
+      <table class="table-gz">
+        <thead><tr><th>Title</th><th>Severity</th><th>Status</th><th>Delivery</th></tr></thead>
+        <tbody id="alertRows"><tr><td colspan="4">No alerts loaded.</td></tr></tbody>
+      </table>
+    </div>
+  </section>
+</section>
+
+<div class="modal fade" id="reviewModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-xl modal-dialog-scrollable">
+    <div class="modal-content" style="border-radius:22px; border:1px solid rgba(17,53,90,0.15);">
+      <div class="modal-header">
+        <h5 class="modal-title">Review deep analysis</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body" id="reviewModalBody">Loading...</div>
+    </div>
+  </div>
+</div>
+</div>
+{% endblock %}
 
 {% block extra_js %}
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-  // Hide blank tab after click
-  document.querySelectorAll(".sidebar .nav-link").forEach((link) => {
-    link.addEventListener("click", () => {
-      document.getElementById("blank").classList.remove("show", "active");
-    });
+  const reviewModal = new bootstrap.Modal(document.getElementById('reviewModal'));
+
+  function esc(value) {
+    return String(value)
+      .replaceAll('&', '&amp;')
+      .replaceAll('<', '&lt;')
+      .replaceAll('>', '&gt;')
+      .replaceAll('"', '&quot;')
+      .replaceAll("'", '&#39;');
+  }
+
+  async function getJson(url) {
+    const res = await fetch(url, { credentials: 'include' });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Request failed');
+    return data;
+  }
+
+  function currentFilters() {
+    return {
+      category: document.getElementById('filterCategory').value,
+      time: document.getElementById('filterTime').value,
+      sentiment: document.getElementById('filterSentiment').value
+    };
+  }
+
+  const trendChart = new Chart(document.getElementById('trendChart'), {
+    type: 'line',
+    data: {
+      labels: [],
+      datasets: [
+        { label: 'Positive', data: [], borderColor: '#16c16f', backgroundColor: 'rgba(22,193,111,0.2)', fill: true, tension: 0.3 },
+        { label: 'Negative', data: [], borderColor: '#f14f55', backgroundColor: 'rgba(241,79,85,0.16)', fill: true, tension: 0.3 },
+        { label: 'Neutral', data: [], borderColor: '#ffb020', backgroundColor: 'rgba(255,176,32,0.19)', fill: true, tension: 0.3 }
+      ]
+    },
+    options: { responsive: true, plugins: { legend: { position: 'bottom' } }, scales: { y: { beginAtZero: true } } }
   });
 
-  // Initialize admin sentiment chart
-  document.addEventListener('DOMContentLoaded', function() {
-    {% if reviews %}
-    try {
-      console.log("Admin sentiment counts:", {
-        positive: {{ sentiment_counts.positive }},
-        negative: {{ sentiment_counts.negative }},
-        neutral: {{ sentiment_counts.neutral }}
-      });
-      const ctx = document.getElementById('adminSentimentChart').getContext('2d');
-      window.adminSentimentChart = new Chart(ctx, {
-        type: 'pie',
-        data: {
-          labels: ['Positive', 'Negative', 'Neutral'],
-          datasets: [{
-            data: [{{ sentiment_counts.positive }}, {{ sentiment_counts.negative }}, {{ sentiment_counts.neutral }}],
-            backgroundColor: [
-              '#22c55e',
-              '#dc3545',
-              '#facc15'
-            ],
-            borderWidth: 1
-          }]
-        },
-        options: {
-          responsive: true,
-          plugins: {
-            legend: {
-              position: 'bottom',
-              labels: {
-                color: '#333'
-              }
-            }
-          }
-        }
-      });
-    } catch (error) {
-      console.error('Error initializing admin sentiment chart:', error);
-    }
-    {% else %}
-    // No reviews - show neutral state
-    try {
-      console.log("No reviews data found, showing empty chart.");
-      const ctx = document.getElementById('adminSentimentChart').getContext('2d');
-      window.adminSentimentChart = new Chart(ctx, {
-        type: 'pie',
-        data: {
-          labels: [],
-          datasets: [{
-            data: [],
-            backgroundColor: [],
-            borderWidth: 0
-          }]
-        },
-        options: {
-          responsive: true,
-          plugins: {
-            legend: {
-              display: false
-            }
-          }
-        }
-      });
-    } catch (error) {
-      console.error('Error initializing empty admin sentiment chart:', error);
-    }
-    {% endif %}
-  });
+  let positiveAspectChart = null;
+  let negativeAspectChart = null;
+  let pieChart = null;
 
-  // Update chart when switching to analyze-reviews tab
-  document.querySelectorAll('.sidebar .nav-link').forEach(function(triggerEl) {
-    triggerEl.addEventListener('shown.bs.tab', function(event) {
-      if (event.target.getAttribute('href') === '#analyze-reviews') {
-        if (window.adminSentimentChart) {
-          window.adminSentimentChart.update();
-        }
+  function renderAspectChart(canvasId, dataset, color, existingChart) {
+    if (existingChart) existingChart.destroy();
+    const labels = (dataset || []).map(item => item.aspect);
+    const values = (dataset || []).map(item => Number(item.avg_confidence || 0) * 100);
+
+    return new Chart(document.getElementById(canvasId), {
+      type: 'bar',
+      data: { labels, datasets: [{ data: values, backgroundColor: color }] },
+      options: {
+        plugins: { legend: { display: false } },
+        scales: { y: { beginAtZero: true, max: 100 } }
       }
     });
+  }
+
+  async function loadCategories() {
+    const categories = await getJson('/admin/api/aspect_categories');
+    const select = document.getElementById('filterCategory');
+    const values = new Set(Array.from(select.options).map(o => o.value));
+
+    categories.forEach((c) => {
+      if (!values.has(c.name)) {
+        const o = document.createElement('option');
+        o.value = c.name;
+        o.textContent = c.name;
+        select.appendChild(o);
+      }
+    });
+  }
+
+  async function loadDashboard() {
+    const filters = currentFilters();
+
+    const stats = await getJson('/admin/api/admin_stats');
+    document.getElementById('statReviews').textContent = stats.reviews;
+    document.getElementById('statAspects').textContent = stats.aspects;
+    document.getElementById('statAccuracy').textContent = `${stats.accuracy}%`;
+    document.getElementById('statUrgent').textContent = stats.urgent_reviews;
+    document.getElementById('statExperience').textContent = Number(stats.avg_experience || 0).toFixed(1);
+    document.getElementById('statImpact').textContent = Number(stats.avg_impact || 0).toFixed(1);
+
+    const trends = await getJson(`/admin/api/sentiment_trends?category=${encodeURIComponent(filters.category)}&time_range=${encodeURIComponent(filters.time)}&sentiment=${encodeURIComponent(filters.sentiment)}`);
+    trendChart.data.labels = trends.dates;
+    trendChart.data.datasets[0].data = trends.positive;
+    trendChart.data.datasets[1].data = trends.negative;
+    trendChart.data.datasets[2].data = trends.neutral;
+    trendChart.update();
+
+    const aspects = await getJson(`/admin/api/aspect_sentiment_distribution?category=${encodeURIComponent(filters.category)}&time_range=${encodeURIComponent(filters.time)}&sentiment=${encodeURIComponent(filters.sentiment)}`);
+    positiveAspectChart = renderAspectChart('positiveAspectChart', aspects.top_positive_aspects, '#16c16f', positiveAspectChart);
+    negativeAspectChart = renderAspectChart('negativeAspectChart', aspects.top_negative_aspects, '#f14f55', negativeAspectChart);
+
+    const clusters = await getJson(`/admin/api/issue_clusters?time_range=${encodeURIComponent(filters.time)}`);
+    const clusterContainer = document.getElementById('issueClusters');
+    clusterContainer.innerHTML = (clusters.clusters || []).length ? (clusters.clusters || []).map((cluster, index) => `
+      <article class="feature-card" style="min-height:auto;">
+        <h3 class="feature-title">Cluster ${index + 1} • ${cluster.size} reviews</h3>
+        <p class="feature-text">${esc(cluster.summary || 'No summary available')}</p>
+        <div class="chip-row" style="margin-top:0.45rem;">
+          ${(cluster.top_terms || []).map((term) => `<span class="chip">${esc(term)}</span>`).join('')}
+        </div>
+      </article>
+    `).join('') : '<p class="page-subtitle">Not enough reviews for clustering yet.</p>';
+
+    const aspectTrends = await getJson(`/admin/api/aspect_trends?time_range=${encodeURIComponent(filters.time)}`);
+    document.getElementById('aspectTrendRows').innerHTML = (aspectTrends.trends || []).length ? (aspectTrends.trends || []).slice(0, 8).map((item) => `
+      <tr>
+        <td>${esc(item.aspect)}</td>
+        <td>${esc(item.direction)}</td>
+        <td>${Number(item.delta || 0)}</td>
+      </tr>
+    `).join('') : '<tr><td colspan="3">Trend signals unavailable.</td></tr>';
+  }
+
+  async function showReviewDetail(reviewId) {
+    const body = document.getElementById('reviewModalBody');
+    body.innerHTML = '<p class="page-subtitle">Loading...</p>';
+    reviewModal.show();
+
+    try {
+      const data = await getJson(`/admin/api/review_analysis/${reviewId}`);
+      const advanced = data.advanced_insights || {};
+      const riskFlags = (advanced.risk_flags || []).map((flag) => `<span class="chip">${esc(flag)}</span>`).join('');
+      const actions = (advanced.recommended_actions || []).map((action) => `<li>${esc(action)}</li>`).join('');
+      const rows = Object.entries(data.aspect_sentiments || {}).map(([aspect, info]) => {
+        const s = (info.sentiment || 'neutral').toLowerCase();
+        const klass = s === 'positive' ? 'badge-pos' : s === 'negative' ? 'badge-neg' : 'badge-neu';
+        return `<tr><td>${esc(aspect)}</td><td><span class="badge-gz ${klass}">${esc(info.sentiment || 'Neutral')}</span></td><td>${Number(info.confidence || 0).toFixed(2)}</td></tr>`;
+      }).join('');
+
+      body.innerHTML = `
+        <div class="layout-grid" style="grid-template-columns:1.15fr 0.85fr;">
+          <section class="g-card g-card-pad">
+            <p class="kicker">User: ${esc(data.username || 'Unknown')}</p>
+            <div style="line-height:1.6;">${data.highlighted_text || esc(data.original_text || '')}</div>
+          </section>
+          <section class="g-card g-card-pad">
+            <p class="kicker">Advanced intelligence</p>
+            <p class="page-subtitle">Intent: ${esc((advanced.intent && advanced.intent.label) || 'general_feedback')}</p>
+            <p class="page-subtitle">Urgency: ${esc((advanced.urgency && advanced.urgency.level) || 'low')} (${Number((advanced.urgency && advanced.urgency.score) || 0).toFixed(2)})</p>
+            <p class="page-subtitle">Emotion: ${esc((advanced.emotion_profile && advanced.emotion_profile.primary_emotion) || 'neutral')}</p>
+            <p class="page-subtitle">Language: ${esc((advanced.language && advanced.language.language) || 'unknown')} (${Number((advanced.language && advanced.language.confidence) || 0).toFixed(2)})</p>
+            <p class="page-subtitle">Priority: ${esc(advanced.priority || 'monitor')}</p>
+            <p class="page-subtitle">Experience score: ${Number(advanced.experience_score || 0).toFixed(0)}/100</p>
+            <p class="page-subtitle">Impact score: ${Number(advanced.impact_score || 0).toFixed(1)}/100</p>
+          </section>
+        </div>
+        <section class="g-card g-card-pad" style="margin-top:0.8rem;">
+          <p class="kicker">Action layer</p>
+          <div class="layout-grid" style="grid-template-columns:0.95fr 1.05fr;">
+            <section class="feature-card" style="min-height:auto;">
+              <h3 class="feature-title">Recommended actions</h3>
+              <ul style="margin:0.45rem 0 0; padding-left:1.1rem; color:var(--ink-soft); line-height:1.6;">${actions || '<li>Monitor similar feedback for stronger pattern confidence.</li>'}</ul>
+            </section>
+            <section class="feature-card" style="min-height:auto;">
+              <h3 class="feature-title">Risk flags</h3>
+              <div class="chip-row" style="margin-top:0.45rem;">${riskFlags || '<span class="chip">No elevated risk flags</span>'}</div>
+            </section>
+          </div>
+        </section>
+        <section class="g-card g-card-pad" style="margin-top:0.8rem;">
+          <p class="kicker">Aspect sentiment table</p>
+          <div class="table-shell">
+            <table class="table-gz">
+              <thead><tr><th>Aspect</th><th>Sentiment</th><th>Confidence</th></tr></thead>
+              <tbody>${rows || '<tr><td colspan="3">No aspects detected.</td></tr>'}</tbody>
+            </table>
+          </div>
+        </section>
+      `;
+    } catch (err) {
+      body.innerHTML = `<p style="color:var(--danger);">${esc(err.message)}</p>`;
+    }
+  }
+  window.showReviewDetail = showReviewDetail;
+
+  async function loadAnalytics() {
+    const data = await getJson('/admin/api/analytics_data');
+    const counts = data.sentiment_counts || { positive: 0, negative: 0, neutral: 0 };
+    const total = Number(data.total_reviews || 0);
+
+    document.getElementById('totalReviews').textContent = total;
+    document.getElementById('positivePercent').textContent = total ? `${((counts.positive / total) * 100).toFixed(1)}%` : '0%';
+    document.getElementById('negativePercent').textContent = total ? `${((counts.negative / total) * 100).toFixed(1)}%` : '0%';
+    document.getElementById('neutralPercent').textContent = total ? `${((counts.neutral / total) * 100).toFixed(1)}%` : '0%';
+
+    if (pieChart) pieChart.destroy();
+    pieChart = new Chart(document.getElementById('pieChart'), {
+      type: 'pie',
+      data: {
+        labels: ['Positive', 'Negative', 'Neutral'],
+        datasets: [{ data: [counts.positive, counts.negative, counts.neutral], backgroundColor: ['#16c16f', '#f14f55', '#ffb020'] }]
+      },
+      options: { plugins: { legend: { position: 'bottom' } } }
+    });
+
+    const reviews = data.reviews || [];
+    document.getElementById('reviewCountText').textContent = `${reviews.length} reviews`;
+    const list = document.getElementById('reviewList');
+    const modelHealth = data.model_health || {};
+
+    if (!reviews.length) {
+      list.innerHTML = '<p class="page-subtitle">No review data available.</p>';
+    } else {
+      list.innerHTML = reviews.map((r) => {
+        const s = (r.overall_sentiment || 'neutral').toLowerCase();
+        const badge = s === 'positive' ? 'badge-pos' : s === 'negative' ? 'badge-neg' : 'badge-neu';
+        return `
+          <article class="feature-card" style="min-height:auto;">
+            <div style="display:flex; justify-content:space-between; gap:0.7rem; align-items:center;">
+              <strong>${esc(r.username || 'Unknown')}</strong>
+              <span class="badge-gz ${badge}">${esc(r.overall_sentiment || 'Neutral')}</span>
+            </div>
+            <p class="feature-text" style="margin-top:0.5rem;">${esc((r.review_text || '').slice(0, 220))}${(r.review_text || '').length > 220 ? '...' : ''}</p>
+            <div style="display:flex; justify-content:space-between; align-items:center; gap:0.6rem; margin-top:0.6rem;">
+              <small class="page-subtitle">Confidence ${(Number(r.overall_sentiment_score || 0) * 100).toFixed(1)}%</small>
+              <button class="btn-gz btn-secondary-gz" type="button" onclick="showReviewDetail(${r.review_id})">Inspect</button>
+            </div>
+          </article>
+        `;
+      }).join('');
+    }
+    const healthChips = Object.entries(modelHealth).map(([key, value]) => `<span class="chip">${esc(key.replaceAll('_', ' '))}: ${value ? 'ready' : 'offline'}</span>`).join('');
+    list.insertAdjacentHTML('afterbegin', `<div class="chip-row" style="margin-bottom:0.7rem;">${healthChips}</div>`);
+  }
+
+  async function loadUsers() {
+    const data = await getJson('/admin/api/users');
+    const users = data.users || [];
+    const grid = document.getElementById('usersGrid');
+
+    if (!users.length) {
+      grid.innerHTML = '<p class="page-subtitle">No users found.</p>';
+      return;
+    }
+
+    grid.innerHTML = users.map((u) => `
+      <article class="feature-card" style="min-height:auto;">
+        <h3 class="feature-title">${esc(u.username)}</h3>
+        <p class="feature-text">${esc(u.email)}</p>
+        <p class="feature-text">Reviews: ${Number(u.total_reviews || 0)}</p>
+        <button class="btn-gz btn-danger-gz" type="button" onclick="deleteUser(${u.user_id})">Delete User</button>
+      </article>
+    `).join('');
+  }
+
+  async function loadAlerts() {
+    const data = await getJson('/admin/api/alerts');
+    const alerts = data.alerts || [];
+    const openAlerts = alerts.filter((alert) => alert.status === 'open');
+    document.getElementById('alertCards').innerHTML = openAlerts.length ? openAlerts.map((alert) => `
+      <article class="feature-card" style="min-height:auto;">
+        <div style="display:flex; justify-content:space-between; gap:0.7rem; align-items:center;">
+          <strong>${esc(alert.title)}</strong>
+          <span class="chip">${esc(alert.severity)}</span>
+        </div>
+        <p class="feature-text" style="margin-top:0.45rem;">${esc(alert.message)}</p>
+        <div style="display:flex; justify-content:space-between; gap:0.7rem; align-items:center; margin-top:0.6rem;">
+          <small class="page-subtitle">Slack: ${alert.delivered_slack ? 'yes' : 'no'} • Email: ${alert.delivered_email ? 'yes' : 'no'}</small>
+          <button class="btn-gz btn-secondary-gz" type="button" onclick="resolveAlert(${alert.alert_id})">Resolve</button>
+        </div>
+      </article>
+    `).join('') : '<p class="page-subtitle">No open alerts.</p>';
+
+    document.getElementById('alertRows').innerHTML = alerts.length ? alerts.map((alert) => `
+      <tr>
+        <td>${esc(alert.title)}</td>
+        <td>${esc(alert.severity)}</td>
+        <td>${esc(alert.status)}</td>
+        <td>Slack ${alert.delivered_slack ? 'yes' : 'no'} • Email ${alert.delivered_email ? 'yes' : 'no'}</td>
+      </tr>
+    `).join('') : '<tr><td colspan="4">No alerts available.</td></tr>';
+  }
+
+  async function loadJobs() {
+    const data = await getJson('/admin/api/reanalysis_jobs');
+    const jobs = data.jobs || [];
+    document.getElementById('jobRows').innerHTML = jobs.length ? jobs.map((job) => `
+      <tr>
+        <td>${esc(job.job_type)} #${job.job_id}</td>
+        <td>${esc(job.status)}</td>
+        <td>${esc(job.requested_by || '-')}</td>
+        <td>${esc(job.created_at || '-')}</td>
+      </tr>
+    `).join('') : '<tr><td colspan="4">No jobs queued yet.</td></tr>';
+  }
+
+  async function deleteUser(userId) {
+    if (!confirm('Delete this user permanently?')) return;
+    const res = await fetch(`/admin/api/users/${userId}`, { method: 'DELETE', credentials: 'include' });
+    const data = await res.json();
+    if (!res.ok) {
+      alert(data.error || 'Unable to delete user');
+      return;
+    }
+    await loadUsers();
+  }
+  window.deleteUser = deleteUser;
+
+  async function resolveAlert(alertId) {
+    const res = await fetch(`/admin/api/alerts/${alertId}/resolve`, {
+      method: 'POST',
+      credentials: 'include'
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      alert(data.error || 'Unable to resolve alert');
+      return;
+    }
+    await loadAlerts();
+  }
+  window.resolveAlert = resolveAlert;
+
+  function showPasswordMessage(message, type) {
+    const el = document.getElementById('passwordMessage');
+    const color = type === 'success' ? 'var(--success)' : 'var(--danger)';
+    el.innerHTML = `<p style="color:${color}; font-weight:800;">${esc(message)}</p>`;
+  }
+
+  document.getElementById('adminPasswordForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const form = e.target;
+    const fd = new FormData(form);
+    const confirmInput = document.getElementById('confirm_password');
+
+    confirmInput.setCustomValidity(
+      fd.get('new_password') === fd.get('confirm_password') ? '' : 'New passwords do not match.'
+    );
+    if (!form.checkValidity()) {
+      form.reportValidity();
+      return;
+    }
+
+    const res = await fetch('/admin/change_password', {
+      method: 'POST',
+      credentials: 'include',
+      body: fd
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      showPasswordMessage(data.error || 'Password update failed.', 'danger');
+      return;
+    }
+
+    showPasswordMessage('Password updated successfully.', 'success');
+    form.reset();
   });
+
+  document.getElementById('btnExport').addEventListener('click', () => {
+    const format = prompt('Enter export format: excel or pdf', 'excel');
+    if (!format) return;
+    window.open(`/admin/export_data?format=${encodeURIComponent(format.toLowerCase())}`, '_blank');
+  });
+
+  document.getElementById('btnReanalyze').addEventListener('click', async () => {
+    const scope = prompt('Re-analysis scope: all or recent', 'recent');
+    if (!scope) return;
+    const res = await fetch('/admin/api/reanalyze', {
+      method: 'POST',
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ scope: scope.toLowerCase() })
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      alert(data.error || 'Unable to queue re-analysis job');
+      return;
+    }
+    alert(`Queued job #${data.job_id} via ${data.execution_mode}`);
+    await loadJobs();
+  });
+
+  document.getElementById('btnAlertScan').addEventListener('click', async () => {
+    const res = await fetch('/admin/api/alerts/scan', {
+      method: 'POST',
+      credentials: 'include'
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      alert(data.error || 'Unable to queue alert scan');
+      return;
+    }
+    alert(`Queued alert scan via ${data.execution_mode}`);
+    await loadJobs();
+  });
+
+  document.querySelectorAll('#adminTabs .segment-btn').forEach((btn) => {
+    btn.addEventListener('click', async () => {
+      document.querySelectorAll('#adminTabs .segment-btn').forEach((b) => b.classList.remove('active'));
+      btn.classList.add('active');
+
+      const tab = btn.getAttribute('data-tab');
+      document.querySelectorAll('.admin-tab').forEach((section) => {
+        section.style.display = 'none';
+      });
+      document.getElementById(`tab-${tab}`).style.display = 'block';
+
+      if (tab === 'dashboard') await loadDashboard();
+      if (tab === 'dashboard') await loadAlerts();
+      if (tab === 'analytics') await loadAnalytics();
+      if (tab === 'users') await loadUsers();
+      if (tab === 'settings') { await loadJobs(); await loadAlerts(); }
+    });
+  });
+
+  ['filterCategory', 'filterTime', 'filterSentiment'].forEach((id) => {
+    document.getElementById(id).addEventListener('change', () => {
+      loadDashboard().catch((err) => console.error(err));
+    });
+  });
+
+  (async function init() {
+    try {
+      await loadCategories();
+      await loadDashboard();
+      await loadAlerts();
+      await loadAnalytics();
+      await loadJobs();
+    } catch (err) {
+      console.error(err);
+    }
+  })();
 </script>
 {% endblock %}

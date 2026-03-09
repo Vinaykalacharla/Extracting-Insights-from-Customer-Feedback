@@ -1,88 +1,91 @@
-{% extends "base.html" %}
-
+﻿{% extends "base.html" %}
 {% block title %}Dashboard | ReviewSense{% endblock %}
 
-{% block content %}
-<style>
-    body {
-        font-family: 'Poppins', sans-serif;
-        background: linear-gradient(rgba(7, 4, 21, 0.7), #070415), url('https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1800&q=80') no-repeat center center/cover;
-        color: #c5c1d9;
-        min-height: 100vh;
-    }
-    .dashboard-card {
-        background: linear-gradient(145deg, rgba(22, 17, 47, 0.7), rgba(15, 12, 32, 0.8));
-        border-radius: 20px;
-        box-shadow: 0 15px 40px rgba(0, 0, 0, 0.5);
-        border: 1px solid rgba(138, 43, 226, 0.3);
-        padding: 2rem;
-        margin-top: 4rem;
-    }
-    .dashboard-image {
-        width: 120px;
-        margin: 0 auto 1.5rem auto;
-        display: block;
-    }
-    .card-title {
-        font-size: 2rem;
-        color: #fff;
-        text-align: center;
-        margin-bottom: 1.5rem;
-    }
-    .dashboard-card, .dashboard-card * {
-        color: #e7f4fe !important;
-    }
-    .dashboard-card .btn-outline-primary {
-        color: #3b82f6 !important;
-        border-color: #3b82f6 !important;
-    }
-    .dashboard-card .btn-outline-success {
-        color: #22c55e !important;
-        border-color: #22c55e !important;
-    }
-    .dashboard-card .btn-outline-warning {
-        color: #facc15 !important;
-        border-color: #facc15 !important;
-    }
-    .btn {
-        font-family: 'Poppins', sans-serif;
-    }
-    .btn-outline-primary, .btn-outline-success, .btn-outline-warning {
-        border-radius: 10px;
-    }
-</style>
-<div class="container">
-    <div class="row justify-content-center">
-        <div class="col-md-8">
-            <div class="dashboard-card">
-                <img src="https://cdn-icons-png.flaticon.com/512/1828/1828919.png" alt="Dashboard" class="dashboard-image">
-                <h2 class="card-title"><span style="vertical-align:middle;font-size:2rem;">📊</span> Dashboard</h2>
-                
-                <p class="lead text-center">
-                    <span style="font-size:1.2rem;vertical-align:middle;">🔒</span> This is a <strong>protected page</strong> that requires authentication.
-                </p>
-                <hr class="my-4">
-                <div class="text-center mb-4">
-                    <h5 class="mb-3"><span style="font-size:1.5rem;vertical-align:middle;">🧭</span> What do you want to do next?</h5>
-                    <a href="{{ url_for('main.profile') }}" class="btn btn-outline-primary me-2"><span style="font-size:1.2rem;vertical-align:middle;">👤</span> View Profile</a>
-                    <a href="{{ url_for('main.upload_review') }}" class="btn btn-outline-success me-2"><span style="font-size:1.2rem;vertical-align:middle;">📝</span> Upload Reviews</a>
-                    <a href="#" class="btn btn-outline-warning"><span style="font-size:1.2rem;vertical-align:middle;">⚙️</span> Settings</a>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
+{% block navbar %}
+<header class="site-nav reveal">
+  <div class="nav-inner">
+    <a class="brand-mark" href="{{ url_for('main.dashboard') }}"><span class="brand-dot"></span>ReviewSense</a>
+    <nav class="nav-links">
+      <a class="nav-link-modern active" href="{{ url_for('main.dashboard') }}">Dashboard</a>
+      <a class="nav-link-modern" href="{{ url_for('main.profile') }}">Profile</a>
+      <a class="nav-link-modern" href="{{ url_for('main.upload_review') }}">Upload</a>
+      <a class="nav-link-modern" href="{{ url_for('main.settings') }}">Settings</a>
+      <a class="nav-link-modern" href="{{ url_for('main.logout') }}">Logout</a>
+    </nav>
+  </div>
+</header>
 {% endblock %}
 
-{% block extra_js %}
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-<script>
-    setTimeout(() => {
-        let alerts = document.querySelectorAll('.alert');
-        alerts.forEach(alert => {
-            let bsAlert = new bootstrap.Alert(alert);
-            bsAlert.close();
-        });
-    }, 3000);
-</script>
+{% block content %}
+<div class="app-shell">
+  <section class="app-hero reveal">
+    <div class="app-hero-grid">
+      <div class="app-hero-copy">
+        <div>
+          <p class="kicker" style="color:rgba(218,235,255,0.8);">User Workspace</p>
+          <h1 class="app-hero-title">
+            Hello {{ user.username if user else 'User' }},
+            <span class="grad-text">let’s decode your customer voice.</span>
+          </h1>
+          <p class="app-hero-text">Move between uploads, profile intelligence, and account controls from one cleaner command layer.</p>
+        </div>
+
+        <div class="hero-action-row">
+          <a class="btn-gz btn-primary-gz" href="{{ url_for('main.upload_review') }}">Upload Reviews</a>
+          <a class="btn-gz btn-secondary-gz" href="{{ url_for('main.profile') }}">Open Profile</a>
+          <a class="btn-gz btn-success-gz" href="{{ url_for('main.sentiment_trends') }}">View Trends</a>
+        </div>
+
+        <div class="hero-stat-row">
+          <article class="hero-stat">
+            <small>Navigation</small>
+            <strong>Dashboard, profile, uploads, settings</strong>
+          </article>
+          <article class="hero-stat">
+            <small>Primary Focus</small>
+            <strong>Review analysis and workspace control</strong>
+          </article>
+          <article class="hero-stat">
+            <small>Next Action</small>
+            <strong>Upload new reviews or inspect history</strong>
+          </article>
+        </div>
+      </div>
+
+      <aside class="hero-side-card">
+        <div>
+          <p class="kicker" style="color:rgba(218,235,255,0.8);">Workspace Summary</p>
+          <strong>Everything important is one click away.</strong>
+        </div>
+        <p class="page-subtitle">Use the profile page for analyzed history, the upload page for fresh data, and settings for account security.</p>
+        <div class="callout-strip">
+          <span style="background:rgba(255,255,255,0.12); color:#e7f3ff;">Upload reviews</span>
+          <span style="background:rgba(255,255,255,0.12); color:#e7f3ff;">Inspect analysis</span>
+          <span style="background:rgba(255,255,255,0.12); color:#e7f3ff;">Protect account</span>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <section class="feature-grid reveal">
+    <article class="feature-card">
+      <p class="kicker">Profile Intelligence</p>
+      <h3 class="feature-title">Inspect analyzed review history</h3>
+      <p class="feature-text">See saved reviews, sentiment distribution, deep analysis modals, and aspect-level shifts.</p>
+      <a class="btn-gz btn-secondary-gz" href="{{ url_for('main.profile') }}">Open Profile</a>
+    </article>
+    <article class="feature-card">
+      <p class="kicker">Upload Center</p>
+      <h3 class="feature-title">Send fresh text or batch CSV files</h3>
+      <p class="feature-text">Submit a single review instantly or upload larger datasets for analysis at scale.</p>
+      <a class="btn-gz btn-primary-gz" href="{{ url_for('main.upload_review') }}">Upload Reviews</a>
+    </article>
+    <article class="feature-card">
+      <p class="kicker">Security</p>
+      <h3 class="feature-title">Keep credentials and access under control</h3>
+      <p class="feature-text">Update your password and maintain a clean, secure workspace configuration.</p>
+      <a class="btn-gz btn-warning-gz" href="{{ url_for('main.settings') }}">Manage Settings</a>
+    </article>
+  </section>
+</div>
 {% endblock %}

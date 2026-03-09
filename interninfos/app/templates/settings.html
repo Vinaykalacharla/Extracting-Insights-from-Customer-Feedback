@@ -1,0 +1,118 @@
+﻿{% extends "base.html" %}
+{% block title %}Settings | ReviewSense{% endblock %}
+
+{% block navbar %}
+<header class="site-nav reveal">
+  <div class="nav-inner">
+    <a class="brand-mark" href="{{ url_for('main.dashboard') }}"><span class="brand-dot"></span>ReviewSense</a>
+    <nav class="nav-links">
+      <a class="nav-link-modern" href="{{ url_for('main.dashboard') }}">Dashboard</a>
+      <a class="nav-link-modern" href="{{ url_for('main.profile') }}">Profile</a>
+      <a class="nav-link-modern" href="{{ url_for('main.upload_review') }}">Upload</a>
+      <a class="nav-link-modern active" href="{{ url_for('main.settings') }}">Settings</a>
+      <a class="nav-link-modern" href="{{ url_for('main.logout') }}">Logout</a>
+    </nav>
+  </div>
+</header>
+{% endblock %}
+
+{% block content %}
+<div class="app-shell">
+  <section class="app-hero reveal">
+    <div class="app-hero-grid">
+      <div class="app-hero-copy">
+        <div>
+          <p class="kicker" style="color:rgba(218,235,255,0.8);">Security Controls</p>
+          <h1 class="app-hero-title">Keep your workspace access secure.</h1>
+          <p class="app-hero-text">Review your account identity and update credentials from one clean security panel.</p>
+        </div>
+        <div class="hero-stat-row">
+          <article class="hero-stat">
+            <small>Current User</small>
+            <strong>{{ user.username }}</strong>
+          </article>
+          <article class="hero-stat">
+            <small>Primary Email</small>
+            <strong>{{ user.email }}</strong>
+          </article>
+          <article class="hero-stat">
+            <small>Recommended Action</small>
+            <strong>Rotate your password regularly</strong>
+          </article>
+        </div>
+      </div>
+
+      <aside class="hero-side-card">
+        <div>
+          <p class="kicker" style="color:rgba(218,235,255,0.8);">Good Practice</p>
+          <strong>Use a new password that is unique to this workspace.</strong>
+        </div>
+        <ul class="list-clean" style="color:rgba(214,227,245,0.82);">
+          <li>Do not reuse old passwords.</li>
+          <li>Confirm the new password carefully.</li>
+          <li>Keep your email updated for account recovery.</li>
+        </ul>
+      </aside>
+    </div>
+  </section>
+
+  <section class="content-grid reveal">
+    <section class="surface-card">
+      <p class="kicker">Account Details</p>
+      <h2 class="page-title" style="font-size:1.3rem;">Identity information</h2>
+      <div class="two-col" style="margin-top:0.9rem;">
+        <div>
+          <label class="label-gz">Username</label>
+          <input class="input-gz" type="text" value="{{ user.username }}" readonly>
+        </div>
+        <div>
+          <label class="label-gz">Email</label>
+          <input class="input-gz" type="email" value="{{ user.email }}" readonly>
+        </div>
+      </div>
+    </section>
+
+    <section class="surface-card">
+      <p class="kicker">Password Update</p>
+      <h2 class="page-title" style="font-size:1.3rem;">Change your password</h2>
+      <p class="page-subtitle">Enter your current password and confirm the new one before saving.</p>
+
+      <form method="POST" id="settingsForm" class="form-grid" style="margin-top:1rem;" novalidate>
+        {{ csrf_form_input() }}
+        <div>
+          <label class="label-gz" for="current_password">Current password</label>
+          <input class="input-gz" type="password" id="current_password" name="current_password" required>
+        </div>
+
+        <div class="two-col">
+          <div>
+            <label class="label-gz" for="new_password">New password</label>
+            <input class="input-gz" type="password" id="new_password" name="new_password" required minlength="{{ min_password_length }}">
+          </div>
+          <div>
+            <label class="label-gz" for="confirm_password">Confirm new password</label>
+            <input class="input-gz" type="password" id="confirm_password" name="confirm_password" required minlength="{{ min_password_length }}">
+          </div>
+        </div>
+
+        <button class="btn-gz btn-primary-gz" type="submit">Update Password</button>
+      </form>
+    </section>
+  </section>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  document.getElementById('settingsForm').addEventListener('submit', function (e) {
+    const confirmField = document.getElementById('confirm_password');
+    const p1 = document.getElementById('new_password').value;
+    const p2 = document.getElementById('confirm_password').value;
+    confirmField.setCustomValidity(p1 === p2 ? '' : 'New passwords do not match.');
+    if (!this.checkValidity()) {
+      e.preventDefault();
+      this.reportValidity();
+    }
+  });
+</script>
+{% endblock %}
