@@ -1,4 +1,5 @@
 import html
+import importlib.util
 import json
 import logging
 import os
@@ -6,33 +7,12 @@ import re
 from copy import deepcopy
 from collections import Counter
 
-import nltk
 import numpy as np
-import spacy
-from nltk.corpus import opinion_lexicon, stopwords
-from transformers import pipeline
 
 try:
     from psycopg2.extras import RealDictCursor
 except ModuleNotFoundError:
     RealDictCursor = None
-
-try:
-    from langdetect import detect_langs
-except ModuleNotFoundError:
-    detect_langs = None
-
-try:
-    from sklearn.cluster import KMeans
-    from sklearn.feature_extraction.text import TfidfVectorizer
-except ModuleNotFoundError:
-    KMeans = None
-    TfidfVectorizer = None
-
-try:
-    from sentence_transformers import SentenceTransformer
-except ModuleNotFoundError:
-    SentenceTransformer = None
 
 _nltk_ready = False
 _spacy_load_attempted = False
@@ -40,6 +20,106 @@ stop_words = None
 positive_words = None
 negative_words = None
 nlp = None
+nltk = None
+spacy = None
+opinion_lexicon = None
+stopwords = None
+pipeline = None
+detect_langs = None
+KMeans = None
+TfidfVectorizer = None
+SentenceTransformer = None
+
+
+def _load_nltk_dependencies():
+    global nltk, opinion_lexicon, stopwords
+    if nltk is not None and opinion_lexicon is not None and stopwords is not None:
+        return True
+
+    try:
+        import nltk as nltk_module
+        from nltk.corpus import opinion_lexicon as opinion_lexicon_module, stopwords as stopwords_module
+    except ModuleNotFoundError:
+        logging.warning("NLTK is unavailable; NLP fallbacks will be limited.")
+        return False
+
+    nltk = nltk_module
+    opinion_lexicon = opinion_lexicon_module
+    stopwords = stopwords_module
+    return True
+
+
+def _load_spacy_module():
+    global spacy
+    if spacy is None:
+        try:
+            import spacy as spacy_module
+        except ModuleNotFoundError:
+            logging.warning("spaCy is unavailable; aspect extraction fallback will be limited.")
+            return None
+        spacy = spacy_module
+    return spacy
+
+
+def _get_transformers_pipeline():
+    global pipeline
+    if pipeline is None:
+        try:
+            from transformers import pipeline as pipeline_module
+        except ModuleNotFoundError:
+            logging.warning("transformers is unavailable; transformer sentiment models are disabled.")
+            pipeline = False
+            return None
+        pipeline = pipeline_module
+    return None if pipeline is False else pipeline
+
+
+def _get_detect_langs():
+    global detect_langs
+    if detect_langs is None:
+        try:
+            from langdetect import detect_langs as detect_langs_func
+        except ModuleNotFoundError:
+            detect_langs = False
+            return None
+        detect_langs = detect_langs_func
+    return None if detect_langs is False else detect_langs
+
+
+def _get_sentence_transformer_cls():
+    global SentenceTransformer
+    if SentenceTransformer is None:
+        try:
+            from sentence_transformers import SentenceTransformer as sentence_transformer_cls
+        except ModuleNotFoundError:
+            SentenceTransformer = False
+            return None
+        SentenceTransformer = sentence_transformer_cls
+    return None if SentenceTransformer is False else SentenceTransformer
+
+
+def _get_kmeans_cls():
+    global KMeans
+    if KMeans is None:
+        try:
+            from sklearn.cluster import KMeans as kmeans_cls
+        except ModuleNotFoundError:
+            KMeans = False
+            return None
+        KMeans = kmeans_cls
+    return None if KMeans is False else KMeans
+
+
+def _get_tfidf_vectorizer_cls():
+    global TfidfVectorizer
+    if TfidfVectorizer is None:
+        try:
+            from sklearn.feature_extraction.text import TfidfVectorizer as tfidf_vectorizer_cls
+        except ModuleNotFoundError:
+            TfidfVectorizer = False
+            return None
+        TfidfVectorizer = tfidf_vectorizer_cls
+    return None if TfidfVectorizer is False else TfidfVectorizer
 
 # Negation words and phrases
 NEGATION_WORDS = {
@@ -101,6 +181,12 @@ def _ensure_nltk_resources():
     global _nltk_ready, stop_words, positive_words, negative_words
     if _nltk_ready:
         return
+    if not _load_nltk_dependencies():
+        stop_words = set()
+        positive_words = set()
+        negative_words = set()
+        _nltk_ready = True
+        return
 
     resources = {
         "corpora/stopwords": "stopwords",
@@ -153,8 +239,11 @@ def get_spacy_model():
     global nlp, _spacy_load_attempted
     if nlp is None and not _spacy_load_attempted:
         _spacy_load_attempted = True
+        spacy_module = _load_spacy_module()
+        if spacy_module is None:
+            return None
         try:
-            nlp = spacy.load("en_core_web_sm")
+            nlp = spacy_module.load("en_core_web_sm")
         except OSError:
             logging.warning("spaCy model 'en_core_web_sm' not found. Install with: python -m spacy download en_core_web_sm")
             nlp = None
@@ -173,9 +262,10 @@ def detect_language(text: str):
     if not text:
         return {'language': 'unknown', 'confidence': 0.0}
 
-    if detect_langs is not None:
+    detect_langs_func = _get_detect_langs()
+    if detect_langs_func is not None:
         try:
-            languages = detect_langs(text[:1000])
+            languages = detect_langs_func(text[:1000])
             if languages:
                 best = languages[0]
                 return {'language': best.lang, 'confidence': round(float(best.prob), 3)}
@@ -191,15 +281,16 @@ def detect_language(text: str):
 
 def get_embedding_model():
     global _embedding_model
-    if _embedding_model is None and SentenceTransformer is not None:
+    sentence_transformer_cls = _get_sentence_transformer_cls()
+    if _embedding_model is None and sentence_transformer_cls is not None:
         try:
             kwargs = {}
             if not ALLOW_MODEL_DOWNLOADS:
                 kwargs["local_files_only"] = True
-            _embedding_model = SentenceTransformer('all-MiniLM-L6-v2', **kwargs)
+            _embedding_model = sentence_transformer_cls('all-MiniLM-L6-v2', **kwargs)
         except TypeError:
             if ALLOW_MODEL_DOWNLOADS:
-                _embedding_model = SentenceTransformer('all-MiniLM-L6-v2')
+                _embedding_model = sentence_transformer_cls('all-MiniLM-L6-v2')
             else:
                 logging.warning("Embedding model downloads are disabled and local_files_only is unsupported.")
                 _embedding_model = None
@@ -533,14 +624,19 @@ def enhanced_sentiment_analysis(text: str) -> dict:
 def get_sentiment_analyzer():
     global _sentiment_analyzer
     if _sentiment_analyzer is None:
+        pipeline_factory = _get_transformers_pipeline()
+        if pipeline_factory is None:
+            return None
         try:
             pipeline_kwargs = {"device": -1}
             if not ALLOW_MODEL_DOWNLOADS:
                 pipeline_kwargs["local_files_only"] = True
-            _sentiment_analyzer = pipeline("sentiment-analysis",
-                                        model=MODEL_NAME,
-                                        tokenizer=MODEL_NAME,
-                                        **pipeline_kwargs)
+            _sentiment_analyzer = pipeline_factory(
+                "sentiment-analysis",
+                model=MODEL_NAME,
+                tokenizer=MODEL_NAME,
+                **pipeline_kwargs,
+            )
         except (OSError, ValueError, TypeError) as e:
             logging.warning(f"Failed to load sentiment analyzer: {e}")
             _sentiment_analyzer = None
@@ -549,11 +645,14 @@ def get_sentiment_analyzer():
 def get_bert_analyzer():
     global _bert_analyzer
     if _bert_analyzer is None:
+        pipeline_factory = _get_transformers_pipeline()
+        if pipeline_factory is None:
+            return None
         try:
             pipeline_kwargs = {"device": -1}
             if not ALLOW_MODEL_DOWNLOADS:
                 pipeline_kwargs["local_files_only"] = True
-            _bert_analyzer = pipeline("sentiment-analysis", model=MODEL_BERT, **pipeline_kwargs)
+            _bert_analyzer = pipeline_factory("sentiment-analysis", model=MODEL_BERT, **pipeline_kwargs)
         except (OSError, ValueError, TypeError) as e:
             logging.warning(f"Failed to load BERT analyzer: {e}")
             _bert_analyzer = None
@@ -562,11 +661,14 @@ def get_bert_analyzer():
 def get_irony_analyzer():
     global _irony_analyzer
     if _irony_analyzer is None:
+        pipeline_factory = _get_transformers_pipeline()
+        if pipeline_factory is None:
+            return None
         try:
             pipeline_kwargs = {"device": -1}
             if not ALLOW_MODEL_DOWNLOADS:
                 pipeline_kwargs["local_files_only"] = True
-            _irony_analyzer = pipeline("text-classification", model=MODEL_IRONY, **pipeline_kwargs)
+            _irony_analyzer = pipeline_factory("text-classification", model=MODEL_IRONY, **pipeline_kwargs)
         except (OSError, ValueError, TypeError) as e:
             logging.warning(f"Failed to load irony analyzer: {e}")
             _irony_analyzer = None
@@ -1035,7 +1137,8 @@ def cluster_reviews_by_similarity(reviews: list[dict], max_clusters: int = 5):
         return []
 
     texts = [review.get('review_text', '') for review in reviews if review.get('review_text')]
-    if len(texts) < 2 or KMeans is None:
+    kmeans_cls = _get_kmeans_cls()
+    if len(texts) < 2 or kmeans_cls is None:
         return [{
             'cluster_id': 0,
             'size': len(reviews),
@@ -1051,7 +1154,8 @@ def cluster_reviews_by_similarity(reviews: list[dict], max_clusters: int = 5):
     if embedding_model is not None:
         matrix = np.array(embedding_model.encode(texts, show_progress_bar=False))
     else:
-        if TfidfVectorizer is None:
+        tfidf_vectorizer_cls = _get_tfidf_vectorizer_cls()
+        if tfidf_vectorizer_cls is None:
             return [{
                 'cluster_id': 0,
                 'size': len(reviews),
@@ -1061,10 +1165,10 @@ def cluster_reviews_by_similarity(reviews: list[dict], max_clusters: int = 5):
                 'review_ids': [review.get('review_id') for review in reviews if review.get('review_id') is not None],
                 'method': 'fallback'
             }]
-        vectorizer = TfidfVectorizer(stop_words='english', max_features=600, ngram_range=(1, 2))
+        vectorizer = tfidf_vectorizer_cls(stop_words='english', max_features=600, ngram_range=(1, 2))
         matrix = vectorizer.fit_transform(texts)
     num_clusters = max(2, min(max_clusters, len(texts)))
-    model = KMeans(n_clusters=num_clusters, n_init=10, random_state=42)
+    model = kmeans_cls(n_clusters=num_clusters, n_init=10, random_state=42)
     labels = model.fit_predict(matrix)
 
     grouped: dict[int, list[dict]] = {}
@@ -1139,12 +1243,12 @@ def compute_aspect_trends(review_analyses: list[dict]):
 def get_model_health():
     return {
         'spacy_ready': get_spacy_model() is not None,
-        'sentiment_model_ready': _sentiment_analyzer is not None,
-        'bert_model_ready': _bert_analyzer is not None,
-        'irony_model_ready': _irony_analyzer is not None,
-        'language_detection_ready': detect_langs is not None,
-        'clustering_ready': TfidfVectorizer is not None and KMeans is not None,
-        'embedding_clustering_ready': _embedding_model is not None
+        'sentiment_model_ready': _sentiment_analyzer is not None or importlib.util.find_spec('transformers') is not None,
+        'bert_model_ready': _bert_analyzer is not None or importlib.util.find_spec('transformers') is not None,
+        'irony_model_ready': _irony_analyzer is not None or importlib.util.find_spec('transformers') is not None,
+        'language_detection_ready': _get_detect_langs() is not None,
+        'clustering_ready': _get_tfidf_vectorizer_cls() is not None and _get_kmeans_cls() is not None,
+        'embedding_clustering_ready': _embedding_model is not None or importlib.util.find_spec('sentence_transformers') is not None
     }
 
 
