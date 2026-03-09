@@ -1,36 +1,29 @@
-# Use Python 3.9 slim image
-FROM python:3.9-slim
+FROM python:3.11-slim
 
-# Set working directory
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PIP_NO_CACHE_DIR=1 \
+    PORT=10000
+
 WORKDIR /app
 
-# Install system dependencies
-RUN apt-get update && apt-get install -y \
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
     gcc \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy requirements first for better caching
-COPY interninfos/requirements.txt .
+COPY interninfos/requirements.txt ./requirements.txt
 
-# Install Python dependencies
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --upgrade pip \
+    && pip install -r requirements.txt
 
-# Download NLTK data
-RUN python -c "import nltk; nltk.download('punkt'); nltk.download('stopwords'); nltk.download('wordnet')"
-
-# Download spaCy model
-RUN python -c "import spacy; spacy.cli.download('en_core_web_sm')"
-
-# Copy the application code
 COPY interninfos/ .
 
-# Create non-root user
-RUN useradd --create-home --shell /bin/bash app \
-    && chown -R app:app /app
-USER app
+RUN useradd --create-home --shell /bin/bash appuser \
+    && chown -R appuser:appuser /app
 
-# Expose port
-EXPOSE 5000
+USER appuser
 
-# Run the application
-CMD ["python", "app.py"]
+EXPOSE 10000
+
+CMD ["sh", "-c", "gunicorn --workers ${WEB_CONCURRENCY:-2} --timeout ${GUNICORN_TIMEOUT:-120} --bind 0.0.0.0:${PORT:-10000} app:app"]
