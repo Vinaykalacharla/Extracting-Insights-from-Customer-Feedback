@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+
+{% block title %}Aspect Analysis{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+  <h2>Aspect-Based Sentiment Analysis</h2>
+
+  <div class="card mb-3">
+    <div class="card-header">Aggregated Aspects</div>
+    <div class="card-body">
+      {% if aggregated %}
+        <table class="table table-sm">
+          <thead>
+            <tr>
+              <th>Aspect</th>
+              <th>Count</th>
+              <th>Avg Score</th>
+              <th>Positive</th>
+              <th>Negative</th>
+              <th>Neutral</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for a in aggregated %}
+              <tr>
+                <td>{{ a.aspect }}</td>
+                <td>{{ a.count }}</td>
+                <td>{{ '%.3f'|format(a.avg_score) }}</td>
+                <td>{{ a.pos_count }}</td>
+                <td>{{ a.neg_count }}</td>
+                <td>{{ a.neutral_count }}</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      {% else %}
+        <p class="text-muted">No aspects found in your reviews.</p>
+      {% endif %}
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header">Review-level Details</div>
+    <div class="card-body">
+      {% for d in details %}
+        <div class="mb-3">
+          <strong>Review #{{ d.index }}</strong>
+          <p>{{ d.text }}</p>
+          {% if d.aspects %}
+            <ul>
+              {% for it in d.aspects %}
+                <li><strong>{{ it.aspect }}</strong>: "{{ it.sentence }}" — score: {{ '%.3f'|format(it.score) }}</li>
+              {% endfor %}
+            </ul>
+          {% endif %}
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+{% endblock %}
